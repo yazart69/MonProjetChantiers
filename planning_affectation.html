@@ -420,9 +420,56 @@
             font-weight: 600;
         }
 
+        .chantier-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
         .chantier-name {
             font-size: 0.9rem;
             font-weight: 500;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .chantier-actions {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .edit-chantier-btn, .delete-chantier-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+        }
+
+        .edit-chantier-btn:hover {
+            background: #dbeafe;
+            transform: scale(1.1);
+        }
+
+        .delete-chantier-btn:hover {
+            background: #fef2f2;
+            transform: scale(1.1);
+        }
+
+        .edit-chantier-btn:active, .delete-chantier-btn:active {
+            transform: scale(0.95);
         }
 
         /* Sélection des jours */
@@ -2346,7 +2393,17 @@
                 chantierDiv.onclick = () => selectChantier(chantier);
 
                 chantierDiv.innerHTML = `
-                    <div class="chantier-name">${chantier}</div>
+                    <div class="chantier-content">
+                        <div class="chantier-name">${chantier}</div>
+                        <div class="chantier-actions">
+                            <button class="edit-chantier-btn" onclick="editChantier('${chantier}')" title="Modifier ce chantier">
+                                <span style="font-size: 14px;">✏️</span>
+                            </button>
+                            <button class="delete-chantier-btn" onclick="deleteChantier('${chantier}')" title="Supprimer ce chantier">
+                                <span style="font-size: 14px;">❌</span>
+                            </button>
+                        </div>
+                    </div>
                 `;
 
                 chantierGrid.appendChild(chantierDiv);
@@ -3934,6 +3991,8 @@
             // Réinitialiser le formulaire
             document.getElementById('chantierName').value = '';
             document.getElementById('chantierDescription').value = '';
+            // Réinitialiser la modal pour l'ajout
+            resetModalForAdd();
         }
 
         function addNewChantier(event) {
@@ -4010,6 +4069,153 @@
                 hideAddChantierModal();
             }
         });
+
+        // Fonctions pour gérer la modification et suppression des chantiers
+        function editChantier(chantierName) {
+            // Empêcher la propagation du clic pour éviter la sélection du chantier
+            event.stopPropagation();
+            
+            // Pré-remplir le formulaire avec le nom actuel
+            document.getElementById('chantierName').value = chantierName;
+            document.getElementById('chantierDescription').value = '';
+            
+            // Changer le titre de la modal
+            document.querySelector('.modal-title').textContent = '✏️ Modifier le chantier';
+            
+            // Changer le bouton de soumission
+            const submitBtn = document.querySelector('.btn-primary');
+            submitBtn.textContent = 'Modifier le chantier';
+            submitBtn.onclick = function(event) {
+                updateChantier(event, chantierName);
+            };
+            
+            // Afficher la modal
+            showAddChantierModal();
+        }
+
+        function updateChantier(event, oldChantierName) {
+            event.preventDefault();
+            
+            const newChantierName = document.getElementById('chantierName').value.trim();
+            const chantierDescription = document.getElementById('chantierDescription').value.trim();
+            
+            if (!newChantierName) {
+                showNotification('Veuillez saisir un nom de chantier', 'error');
+                return;
+            }
+            
+            // Vérifier si le nouveau nom existe déjà (sauf pour le chantier actuel)
+            if (newChantierName !== oldChantierName && chantiers.includes(newChantierName)) {
+                showNotification('Ce nom de chantier existe déjà', 'error');
+                return;
+            }
+            
+            // Mettre à jour le nom dans la liste
+            const index = chantiers.indexOf(oldChantierName);
+            if (index !== -1) {
+                chantiers[index] = newChantierName;
+            }
+            
+            // Mettre à jour les données de planning si nécessaire
+            updatePlanningDataChantierName(oldChantierName, newChantierName);
+            
+            // Sauvegarder la liste des chantiers
+            saveChantiersList();
+            
+            // Mettre à jour l'affichage
+            generateChantierGrid();
+            
+            // Fermer la modal
+            hideAddChantierModal();
+            
+            // Afficher une notification de succès
+            showNotification(`Chantier "${oldChantierName}" modifié en "${newChantierName}"`, 'success');
+            
+            console.log(`✅ Chantier modifié: ${oldChantierName} → ${newChantierName}`);
+        }
+
+        function deleteChantier(chantierName) {
+            // Empêcher la propagation du clic pour éviter la sélection du chantier
+            event.stopPropagation();
+            
+            if (confirm(`Êtes-vous sûr de vouloir supprimer le chantier "${chantierName}" ?\n\n⚠️ Cette action supprimera également toutes les affectations liées à ce chantier.`)) {
+                // Supprimer le chantier de la liste
+                const index = chantiers.indexOf(chantierName);
+                if (index !== -1) {
+                    chantiers.splice(index, 1);
+                }
+                
+                // Supprimer toutes les affectations liées à ce chantier
+                removeChantierFromPlanningData(chantierName);
+                
+                // Sauvegarder la liste des chantiers
+                saveChantiersList();
+                
+                // Mettre à jour l'affichage
+                generateChantierGrid();
+                updateWeekPlanning();
+                
+                // Désélectionner le chantier s'il était sélectionné
+                if (selectedChantier === chantierName) {
+                    selectedChantier = null;
+                }
+                
+                // Afficher une notification de succès
+                showNotification(`Chantier "${chantierName}" supprimé avec succès`, 'success');
+                
+                console.log(`✅ Chantier supprimé: ${chantierName}`);
+            }
+        }
+
+        // Fonction pour mettre à jour les noms de chantiers dans les données de planning
+        function updatePlanningDataChantierName(oldName, newName) {
+            Object.keys(planningData).forEach(week => {
+                Object.keys(planningData[week]).forEach(day => {
+                    planningData[week][day].forEach(affectation => {
+                        if (affectation.chantier === oldName) {
+                            affectation.chantier = newName;
+                        }
+                    });
+                });
+            });
+            
+            // Sauvegarder les modifications
+            savePlanningData();
+        }
+
+        // Fonction pour supprimer un chantier des données de planning
+        function removeChantierFromPlanningData(chantierName) {
+            Object.keys(planningData).forEach(week => {
+                Object.keys(planningData[week]).forEach(day => {
+                    planningData[week][day] = planningData[week][day].filter(
+                        affectation => affectation.chantier !== chantierName
+                    );
+                    
+                    // Si plus d'affectations pour ce jour, supprimer le jour
+                    if (planningData[week][day].length === 0) {
+                        delete planningData[week][day];
+                    }
+                });
+                
+                // Si plus d'affectations pour cette semaine, supprimer la semaine
+                if (Object.keys(planningData[week]).length === 0) {
+                    delete planningData[week];
+                }
+            });
+            
+            // Sauvegarder les modifications
+            savePlanningData();
+        }
+
+        // Réinitialiser la modal après fermeture
+        function resetModalForAdd() {
+            document.querySelector('.modal-title').textContent = '🏗️ Ajouter un nouveau chantier';
+            const submitBtn = document.querySelector('.btn-primary');
+            submitBtn.textContent = 'Ajouter le chantier';
+            submitBtn.onclick = function(event) {
+                addNewChantier(event);
+            };
+        }
     </script>
 </body>
 </html>
