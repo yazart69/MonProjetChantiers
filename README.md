@@ -2,9 +2,10 @@
 
 > **Système de gestion intégré pour l'équipe 41 d'Altrad Prezioso - Chasse sur Rhône**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/ertugrulyasar/gestionnaire-chantier)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/yazart69/MonProjetChantiers)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-production%20ready-brightgreen.svg)]()
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-blue.svg)](https://yazart69.github.io/MonProjetChantiers/)
 
 ## 📋 Table des Matières
 
@@ -75,8 +76,8 @@ Le **Gestionnaire de Chantier** est une application web complète développée p
 
 1. **Cloner le dépôt**
 ```bash
-git clone https://github.com/ertugrulyasar/gestionnaire-chantier.git
-cd gestionnaire-chantier
+git clone https://github.com/yazart69/MonProjetChantiers.git
+cd MonProjetChantiers
 ```
 
 2. **Lancer un serveur local** (optionnel)
@@ -270,7 +271,7 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 ## 📞 Support
 
 Pour toute question ou problème :
-- **Issues GitHub** : [Créer une issue](https://github.com/ertugrulyasar/gestionnaire-chantier/issues)
+- **Issues GitHub** : [Créer une issue](https://github.com/yazart69/MonProjetChantiers/issues)
 - **Email** : ertugrul@altrad.fr
 - **Documentation** : Voir les commentaires dans le code
 
@@ -281,7 +282,7 @@ Pour toute question ou problème :
 **🏗️ Gestionnaire de Chantier - Équipe 41**  
 *Optimisez votre gestion de chantier avec notre solution intégrée*
 
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github)](https://github.com/ertugrulyasar/gestionnaire-chantier)
-[![Demo](https://img.shields.io/badge/Demo-Live%20Site-blue?style=for-the-badge&logo=web)](https://ertugrulyasar.github.io/gestionnaire-chantier)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github)](https://github.com/yazart69/MonProjetChantiers)
+[![Demo](https://img.shields.io/badge/Demo-Live%20Site-blue?style=for-the-badge&logo=web)](https://yazart69.github.io/MonProjetChantiers/)
 
 </div>
