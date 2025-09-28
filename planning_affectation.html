@@ -422,49 +422,53 @@
 
         .chantier-content {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
             height: 100%;
+            position: relative;
         }
 
         .chantier-name {
             font-size: 0.9rem;
             font-weight: 500;
             flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             text-align: center;
-            margin-bottom: 0.5rem;
+            padding-right: 40px; /* Espace pour les boutons */
         }
 
         .chantier-actions {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
             display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: auto;
+            gap: 4px;
         }
 
         .edit-chantier-btn, .delete-chantier-btn {
-            background: none;
+            background: #000000;
             border: none;
             cursor: pointer;
-            padding: 0.25rem;
-            border-radius: 0.25rem;
+            border-radius: 50%;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
+            opacity: 0.7;
         }
 
         .edit-chantier-btn:hover {
-            background: #dbeafe;
+            background: #2563eb;
+            opacity: 1;
             transform: scale(1.1);
         }
 
         .delete-chantier-btn:hover {
-            background: #fef2f2;
+            background: #dc2626;
+            opacity: 1;
             transform: scale(1.1);
         }
 
@@ -3845,7 +3849,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Charger les données initiales
             loadPlanningData();
-            updatePlanningTable();
+            updateWeekPlanning();
             
             // S'abonner au système de synchronisation centralisé
             if (window.dataSyncManager) {
@@ -3865,7 +3869,7 @@
                     console.log('Affectations: Données d\'affectations mises à jour via synchronisation centralisée');
                     if (data && Object.keys(data).length > 0) {
                         planningData = data;
-                        updatePlanningTable();
+                        updateWeekPlanning();
                     }
                 }, 'affectations');
             }
@@ -3875,7 +3879,7 @@
                 window.onDataChange((data) => {
                     if (data.affectations && Object.keys(data.affectations).length > 0) {
                         planningData = data.affectations;
-                        updatePlanningTable();
+                        updateWeekPlanning();
                     }
                 });
             }
@@ -4046,8 +4050,11 @@
                 const saved = localStorage.getItem('customChantiers');
                 if (saved) {
                     const customChantiers = JSON.parse(saved);
-                    // Fusionner avec les chantiers par défaut
-                    chantiers = [...new Set([...chantiers, ...customChantiers])];
+                    // Fusionner avec les chantiers par défaut (chantiers est un array, pas une constante)
+                    const allChantiers = [...new Set([...chantiers, ...customChantiers])];
+                    // Vider et remplir le array chantiers
+                    chantiers.length = 0;
+                    chantiers.push(...allChantiers);
                     console.log('📖 Liste des chantiers chargée:', chantiers.length, 'chantiers');
                 }
             } catch (e) {
@@ -4171,11 +4178,14 @@
         function updatePlanningDataChantierName(oldName, newName) {
             Object.keys(planningData).forEach(week => {
                 Object.keys(planningData[week]).forEach(day => {
-                    planningData[week][day].forEach(affectation => {
-                        if (affectation.chantier === oldName) {
-                            affectation.chantier = newName;
-                        }
-                    });
+                    // Vérifier que planningData[week][day] est un array
+                    if (Array.isArray(planningData[week][day])) {
+                        planningData[week][day].forEach(affectation => {
+                            if (affectation.chantier === oldName) {
+                                affectation.chantier = newName;
+                            }
+                        });
+                    }
                 });
             });
             
@@ -4187,13 +4197,16 @@
         function removeChantierFromPlanningData(chantierName) {
             Object.keys(planningData).forEach(week => {
                 Object.keys(planningData[week]).forEach(day => {
-                    planningData[week][day] = planningData[week][day].filter(
-                        affectation => affectation.chantier !== chantierName
-                    );
-                    
-                    // Si plus d'affectations pour ce jour, supprimer le jour
-                    if (planningData[week][day].length === 0) {
-                        delete planningData[week][day];
+                    // Vérifier que planningData[week][day] est un array
+                    if (Array.isArray(planningData[week][day])) {
+                        planningData[week][day] = planningData[week][day].filter(
+                            affectation => affectation.chantier !== chantierName
+                        );
+                        
+                        // Si plus d'affectations pour ce jour, supprimer le jour
+                        if (planningData[week][day].length === 0) {
+                            delete planningData[week][day];
+                        }
                     }
                 });
                 
