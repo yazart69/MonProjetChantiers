@@ -2208,7 +2208,7 @@
         ];
 
         // Données des chantiers
-        const chantiers = [
+        let chantiers = [
             "HALLE 9",
             "PONT DE CHASSE",
             "VICHY",
@@ -3409,6 +3409,51 @@
                 loadChantierComments(currentWeek);
                 loadSavedImages();
             }, 100);
+        }
+
+        // Fonction pour charger la liste des chantiers
+        function loadChantiersList() {
+            try {
+                const saved = localStorage.getItem('chantiersList');
+                if (saved) {
+                    const allChantiers = JSON.parse(saved);
+                    chantiers.length = 0;
+                    chantiers.push(...allChantiers);
+                    console.log('📖 Liste des chantiers chargée:', chantiers.length, 'chantiers');
+                } else {
+                    console.log('📖 Aucune liste de chantiers sauvegardée');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des chantiers:', error);
+            }
+        }
+
+        // Fonction pour charger les images sauvegardées
+        function loadSavedImages() {
+            try {
+                const saved = localStorage.getItem('chantierImageData');
+                if (saved) {
+                    chantierImageData = JSON.parse(saved);
+                    const currentWeek = document.getElementById('weekSelect').value;
+                    
+                    if (chantierImageData[currentWeek]) {
+                        Object.keys(chantierImageData[currentWeek]).forEach(chantier => {
+                            const imageData = chantierImageData[currentWeek][chantier];
+                            const imageDisplay = document.querySelector(`.image-display[data-chantier="${chantier}"]`);
+                            const uploadedImage = document.querySelector(`.uploaded-image[data-chantier="${chantier}"]`);
+                            const deleteBtn = document.querySelector(`.delete-image-btn[data-chantier="${chantier}"]`);
+                            
+                            if (imageDisplay && uploadedImage && deleteBtn && imageData) {
+                                uploadedImage.src = imageData;
+                                imageDisplay.style.display = 'block';
+                                deleteBtn.style.display = 'block';
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des images:', error);
+            }
         }
 
         // Variables pour les statuts des chantiers
