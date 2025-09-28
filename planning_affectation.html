@@ -1231,6 +1231,22 @@
             background: #b91c1c;
         }
 
+        /* Style pour les membres affectés toute la semaine (vert) */
+        .team-member-weekly {
+            background: #16a34a !important; /* Vert pour affectation complète */
+            color: white !important;
+            border: 2px solid #15803d !important;
+            position: relative;
+        }
+
+        .team-member-weekly::before {
+            content: '📅';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 10px;
+        }
+
         /* Styles pour les boutons de suppression */
         .remove-affectation-btn {
             background: #dc2626 !important;
@@ -2405,8 +2421,8 @@
                         memberDiv.onclick = () => toggleMemberSelection(index, 'member');
                     }
 
-                    // Vérifier si le membre est affecté toute la semaine (seulement pour les membres disponibles)
-                    const isWeeklyAffected = !isUnavailable && currentWeek ? checkWeeklyAffectation(member.name, currentWeek) : false;
+                    // Vérifier si le membre est affecté toute la semaine (seulement pour les membres disponibles et non sous-traitants)
+                    const isWeeklyAffected = !isUnavailable && currentWeek && member.type !== 'contractor' ? checkWeeklyAffectation(member.name, currentWeek) : false;
                     const isAffected = !isUnavailable && currentWeek ? checkIfMemberAffected(member.name, currentWeek) : false;
                     
                     if (isWeeklyAffected) {
@@ -2462,8 +2478,8 @@
                         interimDiv.onclick = () => selectInterimWithCount(index, 'interim');
                     }
 
-                    // Vérifier si l'intérimaire est affecté toute la semaine (seulement pour les intérimaires disponibles)
-                    const isWeeklyAffected = !isUnavailable && currentWeek ? checkWeeklyAffectation(interim.name, currentWeek) : false;
+                    // Vérifier si l'intérimaire est affecté toute la semaine (seulement pour les intérimaires disponibles et non sous-traitants)
+                    const isWeeklyAffected = !isUnavailable && currentWeek && interim.type !== 'contractor' ? checkWeeklyAffectation(interim.name, currentWeek) : false;
                     const isAffected = !isUnavailable && currentWeek ? checkIfMemberAffected(interim.name, currentWeek) : false;
                     
                     if (isWeeklyAffected) {
@@ -3502,8 +3518,8 @@
                 }
             });
             
-            // Considéré comme affecté toute la semaine si affecté sur au moins 4 jours
-            return affectedDays >= 4;
+            // Considéré comme affecté toute la semaine si affecté sur tous les 5 jours
+            return affectedDays >= 5;
         }
 
         // Fonction pour vérifier si un membre est affecté
@@ -3528,6 +3544,30 @@
             }
             
             return false;
+        }
+
+        // Fonction pour supprimer une image uploadée
+        function deleteUploadedImage(chantier) {
+            const imageDisplay = document.querySelector(`.image-display[data-chantier="${chantier}"]`);
+            const uploadedImage = document.querySelector(`.uploaded-image[data-chantier="${chantier}"]`);
+            const deleteBtn = document.querySelector(`.delete-image-btn[data-chantier="${chantier}"]`);
+            const upload = document.querySelector(`.image-upload[data-chantier="${chantier}"]`);
+            
+            if (imageDisplay && uploadedImage && deleteBtn && upload) {
+                imageDisplay.style.display = 'none';
+                uploadedImage.src = '';
+                deleteBtn.style.display = 'none';
+                upload.value = '';
+                
+                // Supprimer des données sauvegardées
+                const currentWeek = document.getElementById('weekSelect').value;
+                if (chantierImageData[currentWeek] && chantierImageData[currentWeek][chantier]) {
+                    delete chantierImageData[currentWeek][chantier];
+                    localStorage.setItem('chantierImageData', JSON.stringify(chantierImageData));
+                }
+                
+                console.log(`🗑️ Image supprimée pour ${chantier}`);
+            }
         }
 
         // Variables pour les statuts des chantiers
