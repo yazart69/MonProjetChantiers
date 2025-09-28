@@ -1231,21 +1231,6 @@
             background: #b91c1c;
         }
 
-        /* Style pour les membres affectés toute la semaine (vert) */
-        .team-member-weekly {
-            background: #16a34a !important; /* Vert pour affectation complète */
-            color: white !important;
-            border: 2px solid #15803d !important;
-            position: relative;
-        }
-
-        .team-member-weekly::before {
-            content: '📅';
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            font-size: 10px;
-        }
 
         /* Styles pour les boutons de suppression */
         .remove-affectation-btn {
@@ -2425,9 +2410,7 @@
                     const isWeeklyAffected = !isUnavailable && currentWeek && member.type !== 'contractor' ? checkWeeklyAffectation(member.name, currentWeek) : false;
                     const isAffected = !isUnavailable && currentWeek ? checkIfMemberAffected(member.name, currentWeek) : false;
                     
-                    if (isWeeklyAffected) {
-                        memberDiv.classList.add('team-member-weekly');
-                    } else if (currentWeek && !isAffected && !isUnavailable) {
+                    if (currentWeek && !isAffected && !isUnavailable) {
                         memberDiv.classList.add('team-member-not-affected');
                     }
 
@@ -2443,10 +2426,13 @@
                         statusInfo = `<div class="member-status-unavailable">${statusLabels[member.status] || 'Indisponible'}</div>`;
                     }
 
+                // Ajouter l'emoji validé vert si affecté toute la semaine
+                const nameWithEmoji = isWeeklyAffected ? `${member.name} ✅` : member.name;
+                
                 memberDiv.innerHTML = `
-                    <div class="member-name">${member.name}</div>
+                    <div class="member-name">${nameWithEmoji}</div>
                     <div class="member-role ${member.type}">${member.role}</div>
-                        ${statusInfo}
+                    ${statusInfo}
                 `;
 
                 teamList.appendChild(memberDiv);
@@ -2482,9 +2468,7 @@
                     const isWeeklyAffected = !isUnavailable && currentWeek && interim.type !== 'contractor' ? checkWeeklyAffectation(interim.name, currentWeek) : false;
                     const isAffected = !isUnavailable && currentWeek ? checkIfMemberAffected(interim.name, currentWeek) : false;
                     
-                    if (isWeeklyAffected) {
-                        interimDiv.classList.add('team-member-weekly');
-                    } else if (currentWeek && !isAffected && !isUnavailable) {
+                    if (currentWeek && !isAffected && !isUnavailable) {
                         interimDiv.classList.add('team-member-not-affected');
                     }
 
@@ -2500,8 +2484,11 @@
                         statusInfo = `<div class="member-status-unavailable">${statusLabels[interim.status] || 'Indisponible'}</div>`;
                     }
 
+                    // Ajouter l'emoji validé vert si affecté toute la semaine
+                    const nameWithEmoji = isWeeklyAffected ? `${interim.name} ✅` : interim.name;
+                    
                     interimDiv.innerHTML = `
-                        <div class="member-name">${interim.name}</div>
+                        <div class="member-name">${nameWithEmoji}</div>
                         <div class="member-role ${interim.type}">${interim.role}</div>
                         ${statusInfo}
                     `;
