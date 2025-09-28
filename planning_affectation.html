@@ -3456,6 +3456,31 @@
             }
         }
 
+        // Fonction pour charger les données de planning
+        function loadPlanningData() {
+            try {
+                const saved = localStorage.getItem('planningData');
+                if (saved) {
+                    planningData = JSON.parse(saved);
+                    console.log('📅 Données de planning chargées:', Object.keys(planningData).length, 'semaines');
+                } else {
+                    console.log('📅 Aucune donnée de planning sauvegardée');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des données de planning:', error);
+            }
+        }
+
+        // Fonction pour sauvegarder les données de planning
+        function savePlanningData() {
+            try {
+                localStorage.setItem('planningData', JSON.stringify(planningData));
+                console.log('💾 Données de planning sauvegardées');
+            } catch (error) {
+                console.error('❌ Erreur lors de la sauvegarde des données de planning:', error);
+            }
+        }
+
         // Variables pour les statuts des chantiers
         let chantierStatusData = {};
         
