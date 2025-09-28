@@ -2416,7 +2416,7 @@
                         memberDiv.onclick = null; // Pas de clic possible
                     } else {
                         // Membre disponible - sélection possible
-                        memberDiv.onclick = () => toggleMemberSelection(index, 'member');
+                        memberDiv.onclick = () => toggleMemberSelection(originalIndex, 'member');
                     }
 
                     // Vérifier si le membre est affecté toute la semaine (seulement pour les membres disponibles et non sous-traitants)
