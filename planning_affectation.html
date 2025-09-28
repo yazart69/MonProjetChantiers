@@ -2441,7 +2441,7 @@
 
                 // Ajouter l'emoji validé vert si affecté toute la semaine
                 const nameWithEmoji = isWeeklyAffected ? `${member.name} ✅` : member.name;
-                console.log('Membre:', member.name, 'isWeeklyAffected:', isWeeklyAffected, 'nameWithEmoji:', nameWithEmoji);
+                console.log('🎯 EMOJI DEBUG - Membre:', member.name, 'isWeeklyAffected:', isWeeklyAffected, 'nameWithEmoji:', nameWithEmoji);
                 
                 memberDiv.innerHTML = `
                     <div class="member-name">${nameWithEmoji}</div>
@@ -3500,10 +3500,14 @@
 
         // Fonction pour vérifier si un membre est affecté toute la semaine
         function checkWeeklyAffectation(memberName, week) {
-            if (!planningData[week]) return false;
+            if (!planningData[week]) {
+                console.log(`🔍 checkWeeklyAffectation: Pas de données pour la semaine ${week}`);
+                return false;
+            }
             
             const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
             let affectedDays = 0;
+            let affectedDaysList = [];
             
             days.forEach(day => {
                 if (planningData[week][day]) {
@@ -3512,6 +3516,7 @@
                             affectations.forEach(affectation => {
                                 if (affectation.name === memberName) {
                                     affectedDays++;
+                                    affectedDaysList.push(day);
                                 }
                             });
                         }
@@ -3519,8 +3524,12 @@
                 }
             });
             
-            // Considéré comme affecté toute la semaine si affecté sur tous les 5 jours
-            return affectedDays >= 5;
+            console.log(`🔍 ${memberName} - Semaine ${week}: ${affectedDays} jours affectés (${affectedDaysList.join(', ')})`);
+            
+            // Considéré comme affecté toute la semaine si affecté sur au moins 4 jours
+            const isWeeklyAffected = affectedDays >= 4;
+            console.log(`🔍 ${memberName} - isWeeklyAffected: ${isWeeklyAffected}`);
+            return isWeeklyAffected;
         }
 
         // Fonction pour vérifier si un membre est affecté
