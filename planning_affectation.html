@@ -2999,18 +2999,26 @@
             // === EN-TÊTE ===
             tableHTML += '<thead>';
             
-            // Première ligne : Jours et Chantiers
+            // Première ligne : Documents/Photos avec QR Code
             tableHTML += '<tr>';
-            tableHTML += '<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold; min-width: 100px;">JOUR</th>';
+            tableHTML += '<th style="background: #7c3aed; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">DOCUMENTS/PHOTOS</th>';
             
-            // Ajouter UNE colonne pour CHAQUE chantier (ILLIMITÉ)
+            // Ajouter une zone pour documents/photos et QR code pour chaque chantier
             chantiersList.forEach((chantier, index) => {
-                console.log(`➕ Colonne ${index + 1}: ${chantier}`);
-                tableHTML += `<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold; min-width: 120px; text-align: center;">${chantier}</th>`;
+                tableHTML += `<th style="background: #7c3aed; color: white; padding: 8px; text-align: center; min-width: 120px;">
+                    <div class="qr-generator-section" data-chantier="${chantier}" style="display: flex; flex-direction: column; gap: 4px;">
+                        <input type="file" class="image-upload" data-chantier="${chantier}" accept="image/*" style="font-size: 8px; padding: 2px; border: 1px solid #ccc; border-radius: 3px; width: 100%;">
+                        <button class="onedrive-qr-btn" data-chantier="${chantier}" style="font-size: 9px; padding: 2px 4px; border: none; background: #0078d4; color: white; border-radius: 3px; cursor: pointer; width: 100%;">OneDrive QR</button>
+                        <button class="delete-qr-btn" data-chantier="${chantier}" style="font-size: 9px; padding: 2px 4px; border: none; background: #dc2626; color: white; border-radius: 3px; cursor: pointer; width: 100%; display: none;">Supprimer</button>
+                        <div class="qr-code-display" data-chantier="${chantier}" style="display: none; margin-top: 4px;">
+                            <div class="qr-code" style="width: 60px; height: 60px; margin: 0 auto; background: white; border: 1px solid #ccc; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #333;">QR Code</div>
+                        </div>
+                    </div>
+                </th>`;
             });
             
             if (chantiersList.length === 0) {
-                tableHTML += '<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold;">AUCUNE AFFECTATION</th>';
+                tableHTML += '<th style="background: #7c3aed; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">DOCUMENTS/PHOTOS</th>';
             }
             
             tableHTML += '</tr>';
@@ -3064,24 +3072,18 @@
             
             tableHTML += '</tr>';
             
-            // Quatrième ligne : Documents/Photos avec QR Code
+            // Quatrième ligne : Jours et Chantiers
             tableHTML += '<tr>';
-            tableHTML += '<th style="background: #7c3aed; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">DOCUMENTS/PHOTOS</th>';
+            tableHTML += '<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold; min-width: 100px;">JOUR</th>';
             
-            // Ajouter une zone pour documents/photos et QR code pour chaque chantier
+            // Ajouter UNE colonne pour CHAQUE chantier (ILLIMITÉ)
             chantiersList.forEach((chantier, index) => {
-                tableHTML += `<th style="background: #7c3aed; color: white; padding: 8px; text-align: center; min-width: 120px;">
-                    <div class="qr-generator-section" data-chantier="${chantier}" style="display: flex; flex-direction: column; gap: 4px;">
-                        <input type="file" class="image-upload" data-chantier="${chantier}" accept="image/*" style="font-size: 8px; padding: 2px; border: 1px solid #ccc; border-radius: 3px; width: 100%;">
-                        <button class="onedrive-qr-btn" data-chantier="${chantier}" style="font-size: 9px; padding: 2px 4px; border: none; background: #0078d4; color: white; border-radius: 3px; cursor: pointer; width: 100%;">OneDrive QR</button>
-                        <button class="delete-qr-btn" data-chantier="${chantier}" style="font-size: 9px; padding: 2px 4px; border: none; background: #dc2626; color: white; border-radius: 3px; cursor: pointer; width: 100%; display: none;">Supprimer</button>
-                        <div class="qr-display" data-chantier="${chantier}" style="min-height: 20px; display: flex; justify-content: center; align-items: center;"></div>
-                    </div>
-                </th>`;
+                console.log(`➕ Colonne ${index + 1}: ${chantier}`);
+                tableHTML += `<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold; min-width: 120px; text-align: center;">${chantier}</th>`;
             });
             
             if (chantiersList.length === 0) {
-                tableHTML += '<th style="background: #7c3aed; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">DOCUMENTS/PHOTOS</th>';
+                tableHTML += '<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">AUCUNE AFFECTATION</th>';
             }
             
             tableHTML += '</tr>';
