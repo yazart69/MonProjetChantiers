@@ -1990,6 +1990,13 @@
             }
         });
 
+        // Nettoyer le module avant de quitter la page
+        window.addEventListener('beforeunload', function() {
+            if (window.cleanupModule) {
+                window.cleanupModule('equipe');
+            }
+        });
+
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
             renderTeamMembers();
@@ -1998,6 +2005,9 @@
             
             // S'abonner au système de synchronisation centralisé
             if (window.dataSyncManager) {
+                // Nettoyer les anciens abonnements avant de s'abonner
+                window.dataSyncManager.cleanupModuleSubscriptions('equipe');
+                
                 // S'abonner aux mises à jour d'équipe
                 window.dataSyncManager.subscribe('team', function(data) {
                     console.log('Équipe: Données mises à jour via synchronisation centralisée');

@@ -17,9 +17,34 @@ class DataSyncManager {
         
         this.subscribers = {};
         this.isInitialized = false;
+        this.lastNotification = null;
         
         // Initialiser le système
         this.init();
+        
+        // Gestionnaire d'erreur global
+        this.setupGlobalErrorHandling();
+    }
+
+    /**
+     * Configuration de la gestion d'erreur globale
+     */
+    setupGlobalErrorHandling() {
+        // Gestionnaire d'erreur global pour éviter les crashes
+        window.addEventListener('error', (event) => {
+            console.error('🚨 Erreur globale détectée:', event.error);
+            // Nettoyer les abonnements en cas d'erreur critique
+            if (event.error && event.error.message && event.error.message.includes('dataSyncManager')) {
+                console.log('🧹 Nettoyage d\'urgence des abonnements...');
+                this.subscribers = {};
+            }
+        });
+        
+        // Gestionnaire pour les promesses rejetées
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('🚨 Promesse rejetée:', event.reason);
+            event.preventDefault(); // Empêcher le crash
+        });
     }
 
     /**
@@ -167,8 +192,15 @@ class DataSyncManager {
             this.subscribers[type] = [];
         }
         
-        this.subscribers[type].push({ callback, moduleName });
-        console.log(`📡 Module ${moduleName} abonné aux mises à jour ${type}`);
+        // Vérifier si le module est déjà abonné pour éviter les doublons
+        const existingSubscription = this.subscribers[type].find(sub => sub.moduleName === moduleName);
+        if (existingSubscription) {
+            console.log(`⚠️ Module ${moduleName} déjà abonné aux mises à jour ${type}, remplacement de l'abonnement`);
+            existingSubscription.callback = callback;
+        } else {
+            this.subscribers[type].push({ callback, moduleName });
+            console.log(`📡 Module ${moduleName} abonné aux mises à jour ${type}`);
+        }
         
         // Retourner une fonction de désabonnement
         return () => {
@@ -182,6 +214,14 @@ class DataSyncManager {
      */
     notifySubscribers(type, data) {
         if (this.subscribers[type]) {
+            // Protection contre les boucles infinies
+            const notificationKey = `${type}_${Date.now()}`;
+            if (this.lastNotification === notificationKey) {
+                console.log(`⚠️ Notification ${type} ignorée (boucle détectée)`);
+                return;
+            }
+            this.lastNotification = notificationKey;
+            
             this.subscribers[type].forEach(subscriber => {
                 try {
                     subscriber.callback(data);
@@ -189,6 +229,13 @@ class DataSyncManager {
                     console.error(`❌ Erreur dans le callback du module ${subscriber.moduleName}:`, error);
                 }
             });
+            
+            // Nettoyer la protection après 100ms
+            setTimeout(() => {
+                if (this.lastNotification === notificationKey) {
+                    this.lastNotification = null;
+                }
+            }, 100);
         }
     }
 
@@ -326,6 +373,21 @@ class DataSyncManager {
     }
 
     /**
+     * Nettoyer tous les abonnements d'un module
+     */
+    cleanupModuleSubscriptions(moduleName) {
+        console.log(`🧹 Nettoyage des abonnements pour le module ${moduleName}`);
+        Object.keys(this.subscribers).forEach(type => {
+            const beforeCount = this.subscribers[type].length;
+            this.subscribers[type] = this.subscribers[type].filter(sub => sub.moduleName !== moduleName);
+            const afterCount = this.subscribers[type].length;
+            if (beforeCount !== afterCount) {
+                console.log(`📡 ${beforeCount - afterCount} abonnement(s) supprimé(s) pour ${type}`);
+            }
+        });
+    }
+
+    /**
      * Nettoyer et synchroniser les données entre modules
      */
     cleanupAndSync() {
@@ -414,6 +476,18 @@ window.resetAllData = function() {
 
 window.cleanupAndSync = function() {
     return window.dataSyncManager.cleanupAndSync();
+};
+
+window.cleanupModuleSubscriptions = function(moduleName) {
+    return window.dataSyncManager.cleanupModuleSubscriptions(moduleName);
+};
+
+// Fonction globale pour nettoyer un module avant de le quitter
+window.cleanupModule = function(moduleName) {
+    if (window.dataSyncManager) {
+        window.dataSyncManager.cleanupModuleSubscriptions(moduleName);
+        console.log(`🧹 Module ${moduleName} nettoyé avant changement`);
+    }
 };
 
 // Auto-sauvegarde périodique

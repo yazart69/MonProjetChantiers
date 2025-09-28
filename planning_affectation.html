@@ -2140,6 +2140,13 @@
         let selectedDays = [];
         let planningData = {};
 
+        // Nettoyer le module avant de quitter la page
+        window.addEventListener('beforeunload', function() {
+            if (window.cleanupModule) {
+                window.cleanupModule('affectations');
+            }
+        });
+
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
             // Charger les chantiers personnalisés
@@ -3908,6 +3915,9 @@
             
             // S'abonner au système de synchronisation centralisé
             if (window.dataSyncManager) {
+                // Nettoyer les anciens abonnements avant de s'abonner
+                window.dataSyncManager.cleanupModuleSubscriptions('affectations');
+                
                 // S'abonner aux mises à jour d'équipe
                 window.dataSyncManager.subscribe('team', function(data) {
                     console.log('Affectations: Données d\'équipe mises à jour via synchronisation centralisée');
