@@ -1353,6 +1353,11 @@
 
         function loadDataFromStorage() {
             try {
+                // Nettoyer et synchroniser les données avant de charger
+                if (window.dataSyncManager && typeof window.dataSyncManager.cleanupAndSync === 'function') {
+                    window.dataSyncManager.cleanupAndSync();
+                }
+                
                 // Utiliser le système de synchronisation centralisé
                 if (window.dataSyncManager) {
                     const data = window.dataSyncManager.loadData('team');
@@ -1987,11 +1992,6 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
-            // Nettoyer et synchroniser les données avant de charger
-            if (window.dataSyncManager) {
-                window.dataSyncManager.cleanupAndSync();
-            }
-            
             renderTeamMembers();
             renderContractors();
             generateAlerts();

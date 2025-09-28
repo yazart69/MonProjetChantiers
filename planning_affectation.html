@@ -2142,11 +2142,6 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
-            // Nettoyer et synchroniser les données avant de charger
-            if (window.dataSyncManager) {
-                window.dataSyncManager.cleanupAndSync();
-            }
-            
             // Charger les chantiers personnalisés
             loadChantiersList();
             
@@ -2178,6 +2173,11 @@
         // Charger les données d'équipe depuis le système de synchronisation
         function loadTeamDataFromSync() {
             try {
+                // Nettoyer et synchroniser les données avant de charger
+                if (window.dataSyncManager && typeof window.dataSyncManager.cleanupAndSync === 'function') {
+                    window.dataSyncManager.cleanupAndSync();
+                }
+                
                 const syncData = window.getSyncData ? window.getSyncData() : null;
                 if (syncData && syncData.team && syncData.team.members && syncData.team.members.length > 0) {
                     // Convertir les données du format équipe vers le format affectations
@@ -2449,7 +2449,7 @@
 
                 chantierDiv.innerHTML = `
                     <div class="chantier-content">
-                        <div class="chantier-name">${chantier}</div>
+                    <div class="chantier-name">${chantier}</div>
                         <div class="chantier-actions">
                             <button class="edit-chantier-btn" onclick="editChantier('${chantier}')" title="Modifier ce chantier">
                                 <span style="font-size: 14px;">✏️</span>
@@ -3035,7 +3035,7 @@
                             if (affectation.name === 'ERTUGRUL' || employeeType === 'conducteur') {
                                 colorClass = 'conducteur-color';
                             } else {
-                                switch(employeeType) {
+                            switch(employeeType) {
                                     case 'employee': colorClass = 'employee-color'; break;
                                     case 'interimaire': colorClass = 'interim-color'; break;
                                     case 'altrad-autres': colorClass = 'altrad-color'; break;
@@ -3060,8 +3060,8 @@
                                 cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <div>
-                                            <div>${affectation.name}</div>
-                                            <div style="font-size: 10px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
+                                    <div>${affectation.name}</div>
+                                    <div style="font-size: 10px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
                                         </div>
                                         <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
                                     </div>
@@ -3071,8 +3071,8 @@
                                     cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
                                         <div style="display: flex; justify-content: space-between; align-items: center;">
                                             <div>
-                                                <div>${affectation.name}</div>
-                                                <div style="font-size: 10px; font-style: italic;">(${affectation.count} personnes)</div>
+                                        <div>${affectation.name}</div>
+                                        <div style="font-size: 10px; font-style: italic;">(${affectation.count} personnes)</div>
                                             </div>
                                             <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
                                         </div>
@@ -3861,7 +3861,7 @@
             if (window.dataSyncManager) {
                 window.dataSyncManager.saveData('affectations', planningData);
             } else {
-                localStorage.setItem('planning_affectations', JSON.stringify(planningData));
+            localStorage.setItem('planning_affectations', JSON.stringify(planningData));
             }
             
             // Synchroniser avec le système global (compatibilité)
@@ -3880,9 +3880,9 @@
                 }
             } else {
                 // Fallback vers l'ancien système
-                const saved = localStorage.getItem('planning_affectations');
-                if (saved) {
-                    planningData = JSON.parse(saved);
+            const saved = localStorage.getItem('planning_affectations');
+            if (saved) {
+                planningData = JSON.parse(saved);
                 }
             }
             
@@ -3930,10 +3930,10 @@
             }
             
             // Écouter les changements de données (compatibilité)
-            if (window.onDataChange) {
-                window.onDataChange((data) => {
-                    if (data.affectations && Object.keys(data.affectations).length > 0) {
-                        planningData = data.affectations;
+        if (window.onDataChange) {
+            window.onDataChange((data) => {
+                if (data.affectations && Object.keys(data.affectations).length > 0) {
+                    planningData = data.affectations;
                         updateWeekPlanning();
                     }
                 });
