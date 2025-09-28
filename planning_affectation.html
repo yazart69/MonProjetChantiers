@@ -1098,15 +1098,12 @@
             }
 
             
-            .onedrive-qr-btn {
+            
+            .delete-image-btn {
                 display: none !important;
             }
             
-            .delete-qr-btn {
-                display: none !important;
-            }
-            
-            .qr-display img {
+            .image-display img {
                 max-height: 200px !important;
                 border: 2px solid #000 !important;
                 margin: 5px auto !important;
@@ -1203,6 +1200,37 @@
         .affectation-item.conducteur-color {
             background: #000000 !important; /* Noir pour conducteurs de travaux */
             color: #ffffff !important;
+        }
+        
+        /* Styles pour les images uploadées */
+        .image-display {
+            margin-top: 4px;
+        }
+        
+        .uploaded-image {
+            max-width: 100px;
+            max-height: 100px;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .delete-image-btn {
+            font-size: 9px;
+            padding: 2px 4px;
+            border: none;
+            background: #dc2626;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 2px;
+        }
+        
+        .delete-image-btn:hover {
+            background: #b91c1c;
         }
 
         /* Styles pour les boutons de suppression */
@@ -2214,6 +2242,7 @@
         let selectedChantier = null;
         let selectedDays = [];
         let planningData = {};
+        let chantierImageData = {};
 
         // Nettoyer le module avant de quitter la page
         window.addEventListener('beforeunload', function() {
@@ -2232,6 +2261,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Charger les chantiers personnalisés
             loadChantiersList();
+            
+            // Charger les images sauvegardées
+            loadSavedImages();
             
             // Charger les données d'équipe depuis le système de synchronisation
             loadTeamDataFromSync();
@@ -3006,12 +3038,11 @@
             // Ajouter une zone pour documents/photos et QR code pour chaque chantier
             chantiersList.forEach((chantier, index) => {
                 tableHTML += `<th style="background: #000000; color: white; padding: 8px; text-align: center; min-width: 120px;">
-                    <div class="qr-generator-section" data-chantier="${chantier}" style="display: flex; flex-direction: column; gap: 4px;">
+                    <div class="image-upload-section" data-chantier="${chantier}" style="display: flex; flex-direction: column; gap: 4px;">
                         <input type="file" class="image-upload" data-chantier="${chantier}" accept="image/*" style="font-size: 8px; padding: 2px; border: 1px solid #ccc; border-radius: 3px; width: 100%;">
-                        <button class="onedrive-qr-btn" data-chantier="${chantier}" style="font-size: 9px; padding: 2px 4px; border: none; background: #0078d4; color: white; border-radius: 3px; cursor: pointer; width: 100%;">OneDrive QR</button>
-                        <button class="delete-qr-btn" data-chantier="${chantier}" style="font-size: 9px; padding: 2px 4px; border: none; background: #dc2626; color: white; border-radius: 3px; cursor: pointer; width: 100%; display: none;">Supprimer</button>
-                        <div class="qr-code-display" data-chantier="${chantier}" style="display: none; margin-top: 4px;">
-                            <div class="qr-code" style="width: 60px; height: 60px; margin: 0 auto; background: white; border: 1px solid #ccc; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #333;">QR Code</div>
+                        <button class="delete-image-btn" data-chantier="${chantier}" style="font-size: 9px; padding: 2px 4px; border: none; background: #dc2626; color: white; border-radius: 3px; cursor: pointer; width: 100%; display: none;">Supprimer</button>
+                        <div class="image-display" data-chantier="${chantier}" style="display: none; margin-top: 4px;">
+                            <img class="uploaded-image" data-chantier="${chantier}" style="max-width: 100px; max-height: 100px; border: 2px solid #fff; border-radius: 4px; object-fit: cover;">
                         </div>
                     </div>
                 </th>`;
@@ -3321,10 +3352,9 @@
                     });
                 });
                 
-                // Gestionnaires d'événements pour le nouveau générateur QR
+                // Gestionnaires d'événements pour l'upload d'images
                 const imageUploads = document.querySelectorAll('.image-upload');
-                const onedriveQrBtns = document.querySelectorAll('.onedrive-qr-btn');
-                const deleteQrBtns = document.querySelectorAll('.delete-qr-btn');
+                const deleteImageBtns = document.querySelectorAll('.delete-image-btn');
                 
                 // Event listener pour l'upload d'image
                 imageUploads.forEach(upload => {
@@ -3334,7 +3364,32 @@
                         
                         if (file && file.type.startsWith('image/')) {
                             console.log(`📸 Image uploadée pour ${chantier}: ${file.name}`);
-                            displayUploadedImage(chantier, file);
+                            
+                            // Créer un URL pour l'image
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                // Afficher l'image
+                                const imageDisplay = document.querySelector(`.image-display[data-chantier="${chantier}"]`);
+                                const uploadedImage = document.querySelector(`.uploaded-image[data-chantier="${chantier}"]`);
+                                const deleteBtn = document.querySelector(`.delete-image-btn[data-chantier="${chantier}"]`);
+                                
+                                if (imageDisplay && uploadedImage && deleteBtn) {
+                                    uploadedImage.src = e.target.result;
+                                    imageDisplay.style.display = 'block';
+                                    deleteBtn.style.display = 'block';
+                                    
+                                    // Sauvegarder l'image en base64
+                                    const currentWeek = document.getElementById('weekSelect').value;
+                                    if (!chantierImageData[currentWeek]) {
+                                        chantierImageData[currentWeek] = {};
+                                    }
+                                    chantierImageData[currentWeek][chantier] = e.target.result;
+                                    localStorage.setItem('chantierImageData', JSON.stringify(chantierImageData));
+                                    
+                                    console.log(`✅ Image sauvegardée pour ${chantier}`);
+                                }
+                            };
+                            reader.readAsDataURL(file);
                         } else {
                             console.log(`❌ Fichier invalide pour ${chantier}`);
                             alert('Veuillez sélectionner un fichier image valide');
@@ -3342,30 +3397,21 @@
                     });
                 });
                 
-                
-                // Event listener pour générer le QR code OneDrive
-                onedriveQrBtns.forEach(btn => {
+                // Event listener pour le bouton de suppression d'image
+                deleteImageBtns.forEach(btn => {
                     btn.addEventListener('click', function() {
                         const chantier = this.getAttribute('data-chantier');
-                        console.log(`☁️ Clic bouton OneDrive pour ${chantier}`);
-                        generateOneDriveQR(chantier);
-                    });
-                });
-                
-                // Event listener pour supprimer le QR code
-                deleteQrBtns.forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const chantier = this.getAttribute('data-chantier');
-                        console.log(`🗑️ Suppression QR pour ${chantier}`);
-                        deleteQRCode(chantier);
+                        deleteUploadedImage(chantier);
                     });
                 });
                 
                 
-                // Charger les statuts, commentaires et QR codes sauvegardés
+                
+                
+                // Charger les statuts, commentaires et images sauvegardés
                 loadChantierStatuses(currentWeek);
                 loadChantierComments(currentWeek);
-                loadChantierQRCodes(currentWeek);
+                loadSavedImages();
             }, 100);
         }
 
@@ -3709,139 +3755,7 @@
             reader.readAsDataURL(imageFile);
         }
 
-        // Fonction pour générer un QR code OneDrive
-        function generateOneDriveQR(chantier) {
-            console.log(`☁️ Génération QR OneDrive pour ${chantier}`);
-            
-            // Demander le lien OneDrive
-            const oneDriveURL = prompt(`Entrez le lien OneDrive pour ${chantier}:\n\nExemple: https://1drv.ms/b/s!ABC123...`);
-            
-            if (!oneDriveURL || oneDriveURL.trim() === '') {
-                console.log('❌ Aucun lien OneDrive fourni');
-                return;
-            }
-            
-            // Vérifier que c'est bien un lien OneDrive
-            if (!oneDriveURL.includes('1drv.ms') && !oneDriveURL.includes('onedrive.live.com')) {
-                alert('⚠️ Veuillez entrer un lien OneDrive valide (1drv.ms ou onedrive.live.com)');
-                return;
-            }
-            
-            // Générer le QR code OneDrive
-            generateOneDriveQRCode(chantier, oneDriveURL);
-        }
         
-        // Fonction pour générer le QR code OneDrive
-        function generateOneDriveQRCode(chantier, oneDriveURL) {
-            console.log(`☁️ Génération QR OneDrive pour ${chantier}`);
-            
-            const qrDisplay = document.querySelector(`.qr-display[data-chantier="${chantier}"]`);
-            if (!qrDisplay) {
-                console.error(`❌ Conteneur QR non trouvé pour ${chantier}`);
-                return;
-            }
-            
-            // Vider le conteneur
-            qrDisplay.innerHTML = '';
-            
-            // Créer le texte pour le QR code
-            const currentWeek = document.getElementById('weekSelect').value;
-            const qrText = `🏗️ CHANTIER: ${chantier}\n📅 SEMAINE: ${currentWeek}\n☁️ ONEDRIVE: ${oneDriveURL}\n📁 FICHIER: Document chantier`;
-            
-            // Créer un canvas pour le QR code
-            const canvas = document.createElement('canvas');
-            canvas.width = 120;
-            canvas.height = 120;
-            canvas.style.border = '2px solid #000';
-            canvas.style.borderRadius = '5px';
-            canvas.style.backgroundColor = '#fff';
-            canvas.style.display = 'block';
-            canvas.style.margin = '0 auto';
-            canvas.style.maxWidth = '100%';
-            canvas.style.maxHeight = '80px';
-            
-            const ctx = canvas.getContext('2d');
-            
-            // Fond blanc
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, 120, 120);
-            
-            // Créer un hash basé sur le texte OneDrive
-            let hash = 0;
-            for (let i = 0; i < qrText.length; i++) {
-                hash = ((hash << 5) - hash + qrText.charCodeAt(i)) & 0xffffffff;
-            }
-            
-            // Dessiner un motif QR simple
-            ctx.fillStyle = '#000000';
-            const cellSize = 6;
-            const cells = 20; // 120/6 = 20
-            
-            // Coins de repérage
-            const cornerSize = 3;
-            
-            // Coin supérieur gauche
-            ctx.fillRect(0, 0, cornerSize * cellSize, cornerSize * cellSize);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(cellSize, cellSize, cellSize, cellSize);
-            ctx.fillStyle = '#000000';
-            
-            // Coin supérieur droit
-            ctx.fillRect((cells - cornerSize) * cellSize, 0, cornerSize * cellSize, cornerSize * cellSize);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect((cells - 2) * cellSize, cellSize, cellSize, cellSize);
-            ctx.fillStyle = '#000000';
-            
-            // Coin inférieur gauche
-            ctx.fillRect(0, (cells - cornerSize) * cellSize, cornerSize * cellSize, cornerSize * cellSize);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(cellSize, (cells - 2) * cellSize, cellSize, cellSize);
-            ctx.fillStyle = '#000000';
-            
-            // Motif central basé sur le hash
-            for (let x = 4; x < cells - 4; x++) {
-                for (let y = 4; y < cells - 4; y++) {
-                    const seed = (hash + x * 7 + y * 11) % 100;
-                    if (seed < 40) {
-                        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-                    }
-                }
-            }
-            
-            // Ajouter le nom du chantier
-            ctx.fillStyle = '#000000';
-            ctx.font = 'bold 7px Arial';
-            ctx.textAlign = 'center';
-            const chantierShort = chantier.length > 15 ? chantier.substring(0, 15) + '...' : chantier;
-            ctx.fillText(chantierShort, 60, 115);
-            
-            // Ajouter au conteneur
-            qrDisplay.appendChild(canvas);
-            
-            // Marquer comme généré
-            qrDisplay.setAttribute('data-qr-generated', 'true');
-            
-            // Afficher le bouton de suppression
-            const deleteBtn = document.querySelector(`.delete-qr-btn[data-chantier="${chantier}"]`);
-            if (deleteBtn) {
-                deleteBtn.style.display = 'block';
-            }
-            
-            // Sauvegarder
-            const currentWeekData = document.getElementById('weekSelect').value;
-            if (!chantierQRData[currentWeekData]) {
-                chantierQRData[currentWeekData] = {};
-            }
-            chantierQRData[currentWeekData][chantier] = {
-                oneDriveURL: oneDriveURL,
-                qrText: qrText,
-                timestamp: new Date().toISOString(),
-                imageData: canvas.toDataURL(),
-                type: 'onedrive'
-            };
-            localStorage.setItem('chantierQRData', JSON.stringify(chantierQRData));
-            
-            console.log('✅ QR Code OneDrive généré avec succès pour', chantier);
         }
 
 
@@ -4020,6 +3934,58 @@
                 if (syncData.affectations && Object.keys(syncData.affectations).length > 0) {
                     planningData = syncData.affectations;
                 }
+            }
+        }
+
+        // Fonction pour supprimer une image uploadée
+        function deleteUploadedImage(chantier) {
+            const imageDisplay = document.querySelector(`.image-display[data-chantier="${chantier}"]`);
+            const uploadedImage = document.querySelector(`.uploaded-image[data-chantier="${chantier}"]`);
+            const deleteBtn = document.querySelector(`.delete-image-btn[data-chantier="${chantier}"]`);
+            const upload = document.querySelector(`.image-upload[data-chantier="${chantier}"]`);
+            
+            if (imageDisplay && uploadedImage && deleteBtn && upload) {
+                imageDisplay.style.display = 'none';
+                uploadedImage.src = '';
+                deleteBtn.style.display = 'none';
+                upload.value = '';
+                
+                // Supprimer des données sauvegardées
+                const currentWeek = document.getElementById('weekSelect').value;
+                if (chantierImageData[currentWeek] && chantierImageData[currentWeek][chantier]) {
+                    delete chantierImageData[currentWeek][chantier];
+                    localStorage.setItem('chantierImageData', JSON.stringify(chantierImageData));
+                }
+                
+                console.log(`🗑️ Image supprimée pour ${chantier}`);
+            }
+        }
+        
+        // Fonction pour charger les images sauvegardées
+        function loadSavedImages() {
+            try {
+                const saved = localStorage.getItem('chantierImageData');
+                if (saved) {
+                    chantierImageData = JSON.parse(saved);
+                    const currentWeek = document.getElementById('weekSelect').value;
+                    
+                    if (chantierImageData[currentWeek]) {
+                        Object.keys(chantierImageData[currentWeek]).forEach(chantier => {
+                            const imageData = chantierImageData[currentWeek][chantier];
+                            const imageDisplay = document.querySelector(`.image-display[data-chantier="${chantier}"]`);
+                            const uploadedImage = document.querySelector(`.uploaded-image[data-chantier="${chantier}"]`);
+                            const deleteBtn = document.querySelector(`.delete-image-btn[data-chantier="${chantier}"]`);
+                            
+                            if (imageDisplay && uploadedImage && deleteBtn && imageData) {
+                                uploadedImage.src = imageData;
+                                imageDisplay.style.display = 'block';
+                                deleteBtn.style.display = 'block';
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des images:', error);
             }
         }
 
