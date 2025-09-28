@@ -2166,7 +2166,7 @@
                             name: member.name,
                             role: member.role,
                             type: member.role.toLowerCase().includes('chef') ? 'chef' : 'operateur',
-                            employeeType: member.type || 'employee', // Récupérer le type d'employé
+                            employeeType: member.employeeType || member.type || 'employee', // Récupérer le type d'employé
                             status: member.status || 'available',
                             reason: member.reason || '',
                             dateDebut: member.dateDebut || '',
@@ -3011,12 +3011,18 @@
                             let bgColor = '#dc2626'; // Rouge par défaut
                             let textColor = 'white';
                             
-                            switch(employeeType) {
-                                case 'employee': bgColor = '#dc2626'; textColor = 'white'; break;
-                                case 'interimaire': bgColor = '#2563eb'; textColor = 'white'; break;
-                                case 'altrad-autres': bgColor = '#7c3aed'; textColor = 'white'; break;
-                                case 'contractor': bgColor = '#fbbf24'; textColor = '#000'; break;
-                                case 'conducteur': bgColor = '#000000'; textColor = '#ffffff'; break;
+                            // Vérification spéciale pour ERTUGRUL
+                            if (affectation.name === 'ERTUGRUL') {
+                                bgColor = '#000000';
+                                textColor = '#ffffff';
+                            } else {
+                                switch(employeeType) {
+                                    case 'employee': bgColor = '#dc2626'; textColor = 'white'; break;
+                                    case 'interimaire': bgColor = '#2563eb'; textColor = 'white'; break;
+                                    case 'altrad-autres': bgColor = '#7c3aed'; textColor = 'white'; break;
+                                    case 'contractor': bgColor = '#fbbf24'; textColor = '#000'; break;
+                                    case 'conducteur': bgColor = '#000000'; textColor = '#ffffff'; break;
+                                }
                             }
                             
                             if (isUnavailable) {
