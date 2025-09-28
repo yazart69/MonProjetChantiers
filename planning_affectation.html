@@ -968,6 +968,11 @@
                 color: #000000 !important;
             }
 
+            .affectation-item.conducteur-color {
+                background: #000000 !important; /* Noir pour conducteurs de travaux */
+                color: #ffffff !important;
+            }
+
             /* Styles pour les membres indisponibles (priorité sur les couleurs de type) */
             .affectation-item.unavailable {
                 background: #fbbf24 !important;
@@ -1193,6 +1198,11 @@
         .affectation-item.contractor-color {
             background: #fbbf24 !important; /* Jaune pour sous-traitants */
             color: #000000 !important;
+        }
+
+        .affectation-item.conducteur-color {
+            background: #000000 !important; /* Noir pour conducteurs de travaux */
+            color: #ffffff !important;
         }
 
         /* Styles pour les boutons de suppression */
@@ -1621,6 +1631,11 @@
             color: #000000;
         }
 
+        .legend-item.conducteur-color {
+            background: #000000;
+            color: #ffffff;
+        }
+
         .legend-item.unavailable {
             background: #fbbf24;
             color: #000000;
@@ -2028,6 +2043,7 @@
                             <div class="legend-item interim-color">Intérimaires</div>
                             <div class="legend-item altrad-color">Altrad Autres</div>
                             <div class="legend-item contractor-color">Sous-traitants</div>
+                            <div class="legend-item conducteur-color">Conducteurs de travaux</div>
                             <div class="legend-item unavailable">Indisponibles</div>
                         </div>
                     </div>
@@ -3008,26 +3024,23 @@
                                 ['formation', 'conge', 'maladie', 'unavailable'].includes(member.status);
                             
                             const employeeType = member ? member.employeeType : 'employee';
-                            let bgColor = '#dc2626'; // Rouge par défaut
-                            let textColor = 'white';
                             
-                            // Vérification spéciale pour ERTUGRUL
-                            if (affectation.name === 'ERTUGRUL') {
-                                bgColor = '#000000';
-                                textColor = '#ffffff';
+                            // Déterminer la classe CSS selon le type d'employé
+                            let colorClass = 'employee-color';
+                            if (affectation.name === 'ERTUGRUL' || employeeType === 'conducteur') {
+                                colorClass = 'conducteur-color';
                             } else {
                                 switch(employeeType) {
-                                    case 'employee': bgColor = '#dc2626'; textColor = 'white'; break;
-                                    case 'interimaire': bgColor = '#2563eb'; textColor = 'white'; break;
-                                    case 'altrad-autres': bgColor = '#7c3aed'; textColor = 'white'; break;
-                                    case 'contractor': bgColor = '#fbbf24'; textColor = '#000'; break;
-                                    case 'conducteur': bgColor = '#000000'; textColor = '#ffffff'; break;
+                                    case 'employee': colorClass = 'employee-color'; break;
+                                    case 'interimaire': colorClass = 'interim-color'; break;
+                                    case 'altrad-autres': colorClass = 'altrad-color'; break;
+                                    case 'contractor': colorClass = 'contractor-color'; break;
+                                    case 'conducteur': colorClass = 'conducteur-color'; break;
                                 }
                             }
                             
                             if (isUnavailable) {
-                                bgColor = '#fbbf24';
-                                textColor = '#000';
+                                colorClass = 'unavailable';
                             }
                             
                             const margin = index < chantierAffectations.length - 1 ? 'margin-bottom: 4px;' : '';
@@ -3039,7 +3052,7 @@
                                     'maladie': 'Maladie',
                                     'unavailable': 'Indisponible'
                                 };
-                                cellHTML += `<div style="background: ${bgColor}; color: ${textColor}; padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
+                                cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <div>
                                             <div>${affectation.name}</div>
@@ -3050,7 +3063,7 @@
                                 </div>`;
                             } else {
                                 if (affectation.count && affectation.count !== '1') {
-                                    cellHTML += `<div style="background: ${bgColor}; color: ${textColor}; padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
+                                    cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
                                         <div style="display: flex; justify-content: space-between; align-items: center;">
                                             <div>
                                                 <div>${affectation.name}</div>
@@ -3060,7 +3073,7 @@
                                         </div>
                                     </div>`;
                                 } else {
-                                    cellHTML += `<div style="background: ${bgColor}; color: ${textColor}; padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
+                                    cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
                                         <div style="display: flex; justify-content: space-between; align-items: center;">
                                             <div>${affectation.name}</div>
                                             <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
