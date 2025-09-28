@@ -3057,17 +3057,17 @@
             
             // Troisième ligne : Commentaires des chantiers
             tableHTML += '<tr>';
-            tableHTML += '<th style="background: #2563eb; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">COMMENTAIRE</th>';
+            tableHTML += '<th style="background: #ffffff; color: #000000; padding: 8px; font-weight: bold; min-width: 100px; text-align: center; border: 1px solid #000000;">COMMENTAIRE</th>';
             
             // Ajouter une zone de texte pour chaque chantier
             chantiersList.forEach((chantier, index) => {
-                tableHTML += `<th style="background: #2563eb; color: white; padding: 8px; text-align: center; min-width: 120px;">
+                tableHTML += `<th style="background: #ffffff; color: #000000; padding: 8px; text-align: center; min-width: 120px; border: 1px solid #000000;">
                     <textarea class="chantier-comment" data-chantier="${chantier}" placeholder="Commentaire..." style="width: 100%; font-size: 12px; padding: 4px; border: none; background: white; color: #333; border-radius: 3px; resize: none; min-height: 40px; max-height: 200px; overflow: hidden; line-height: 1.4;"></textarea>
                 </th>`;
             });
             
             if (chantiersList.length === 0) {
-                tableHTML += '<th style="background: #2563eb; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">COMMENTAIRE</th>';
+                tableHTML += '<th style="background: #ffffff; color: #000000; padding: 8px; font-weight: bold; min-width: 100px; text-align: center; border: 1px solid #000000;">COMMENTAIRE</th>';
             }
             
             tableHTML += '</tr>';
@@ -3079,7 +3079,7 @@
             // Ajouter UNE colonne pour CHAQUE chantier (ILLIMITÉ)
             chantiersList.forEach((chantier, index) => {
                 console.log(`➕ Colonne ${index + 1}: ${chantier}`);
-                tableHTML += `<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold; min-width: 120px; text-align: center;">${chantier}</th>`;
+                tableHTML += `<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold; min-width: 120px; text-align: center; border: 2px solid #000000;">${chantier}</th>`;
             });
             
             if (chantiersList.length === 0) {
