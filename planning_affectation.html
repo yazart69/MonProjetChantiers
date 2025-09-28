@@ -3481,6 +3481,55 @@
             }
         }
 
+        // Fonction pour vérifier si un membre est affecté toute la semaine
+        function checkWeeklyAffectation(memberName, week) {
+            if (!planningData[week]) return false;
+            
+            const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+            let affectedDays = 0;
+            
+            days.forEach(day => {
+                if (planningData[week][day]) {
+                    Object.values(planningData[week][day]).forEach(affectations => {
+                        if (Array.isArray(affectations)) {
+                            affectations.forEach(affectation => {
+                                if (affectation.name === memberName) {
+                                    affectedDays++;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            
+            // Considéré comme affecté toute la semaine si affecté sur au moins 4 jours
+            return affectedDays >= 4;
+        }
+
+        // Fonction pour vérifier si un membre est affecté
+        function checkIfMemberAffected(memberName, week) {
+            if (!planningData[week]) return false;
+            
+            const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+            
+            for (let day of days) {
+                if (planningData[week][day]) {
+                    for (let chantier in planningData[week][day]) {
+                        const affectations = planningData[week][day][chantier];
+                        if (Array.isArray(affectations)) {
+                            for (let affectation of affectations) {
+                                if (affectation.name === memberName) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
         // Variables pour les statuts des chantiers
         let chantierStatusData = {};
         
