@@ -1837,12 +1837,87 @@
         @media print {
             .sidebar,
             .header-actions,
-            .actions {
+            .actions,
+            .remove-affectation-btn,
+            .add-chantier-btn,
+            .edit-chantier-btn,
+            .delete-chantier-btn,
+            .chantier-actions,
+            .color-legend,
+            .week-selector,
+            .print-btn {
                 display: none !important;
             }
             
             .main-content {
                 margin-left: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Optimisation pour A4 */
+            .planning-table-container {
+                width: 100% !important;
+                overflow: visible !important;
+            }
+            
+            .planning-table {
+                width: 100% !important;
+                font-size: 8px !important;
+                border-collapse: collapse !important;
+            }
+            
+            .planning-table th,
+            .planning-table td {
+                padding: 2px 1px !important;
+                border: 1px solid #000 !important;
+                font-size: 7px !important;
+                line-height: 1.1 !important;
+            }
+            
+            .planning-table th {
+                background: #f0f0f0 !important;
+                font-weight: bold !important;
+                text-align: center !important;
+            }
+            
+            .affectation-item {
+                padding: 1px 2px !important;
+                margin: 0 !important;
+                font-size: 6px !important;
+                line-height: 1 !important;
+                border-radius: 0 !important;
+                display: block !important;
+                margin-bottom: 1px !important;
+            }
+            
+            .chantier-item {
+                padding: 1px 2px !important;
+                margin: 0 !important;
+                font-size: 6px !important;
+                line-height: 1 !important;
+                border-radius: 0 !important;
+                border: 1px solid #000 !important;
+            }
+            
+            .chantier-name {
+                font-size: 6px !important;
+                padding: 1px !important;
+                margin: 0 !important;
+            }
+            
+            /* Masquer les boutons dans les cellules */
+            .affectation-item button,
+            .chantier-item button {
+                display: none !important;
+            }
+            
+            /* Ajuster les cellules pour ne pas avoir de boutons */
+            .affectation-item > div {
+                display: block !important;
+            }
+            
+            .affectation-item > div > div:first-child {
+                margin-bottom: 0 !important;
             }
             
             .card {
@@ -2147,6 +2222,12 @@
             }
         });
 
+        // Détecter la fin d'impression et régénérer le tableau normal
+        window.addEventListener('afterprint', function() {
+            generateChantierGrid();
+            updateWeekPlanning();
+        });
+
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
             // Charger les chantiers personnalisés
@@ -2448,25 +2529,40 @@
             const chantierGrid = document.getElementById('chantierGrid');
             chantierGrid.innerHTML = '';
 
+            const isPrinting = window.matchMedia('print').matches;
+
             chantiers.forEach((chantier, index) => {
                 const chantierDiv = document.createElement('div');
                 chantierDiv.className = 'chantier-item';
                 chantierDiv.dataset.chantier = chantier;
-                chantierDiv.onclick = () => selectChantier(chantier);
+                
+                if (!isPrinting) {
+                    chantierDiv.onclick = () => selectChantier(chantier);
+                }
 
-                chantierDiv.innerHTML = `
-                    <div class="chantier-content">
-                    <div class="chantier-name">${chantier}</div>
-                        <div class="chantier-actions">
-                            <button class="edit-chantier-btn" onclick="editChantier('${chantier}')" title="Modifier ce chantier">
-                                <span style="font-size: 14px;">✏️</span>
-                            </button>
-                            <button class="delete-chantier-btn" onclick="deleteChantier('${chantier}')" title="Supprimer ce chantier">
-                                <span style="font-size: 14px;">❌</span>
-                            </button>
+                if (isPrinting) {
+                    // Version simplifiée pour l'impression
+                    chantierDiv.innerHTML = `
+                        <div class="chantier-content">
+                            <div class="chantier-name">${chantier}</div>
                         </div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    // Version complète pour l'affichage normal
+                    chantierDiv.innerHTML = `
+                        <div class="chantier-content">
+                        <div class="chantier-name">${chantier}</div>
+                            <div class="chantier-actions">
+                                <button class="edit-chantier-btn" onclick="editChantier('${chantier}')" title="Modifier ce chantier">
+                                    <span style="font-size: 14px;">✏️</span>
+                                </button>
+                                <button class="delete-chantier-btn" onclick="deleteChantier('${chantier}')" title="Supprimer ce chantier">
+                                    <span style="font-size: 14px;">❌</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
 
                 chantierGrid.appendChild(chantierDiv);
             });
@@ -3064,33 +3160,55 @@
                                     'maladie': 'Maladie',
                                     'unavailable': 'Indisponible'
                                 };
-                                cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div>
-                                    <div>${affectation.name}</div>
-                                    <div style="font-size: 10px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
-                                        </div>
-                                        <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
-                                    </div>
-                                </div>`;
-                            } else {
-                                if (affectation.count && affectation.count !== '1') {
-                                    cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                                            <div>
+                                // Version pour l'impression (sans boutons)
+                                const isPrinting = window.matchMedia('print').matches;
+                                if (isPrinting) {
+                                    cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 1px 2px; font-size: 6px; font-weight: bold; ${margin}">
                                         <div>${affectation.name}</div>
-                                        <div style="font-size: 10px; font-style: italic;">(${affectation.count} personnes)</div>
-                                            </div>
-                                            <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
-                                        </div>
+                                        <div style="font-size: 5px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
                                     </div>`;
                                 } else {
                                     cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
                                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                                            <div>${affectation.name}</div>
+                                            <div>
+                                                <div>${affectation.name}</div>
+                                                <div style="font-size: 10px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
+                                            </div>
                                             <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
                                         </div>
                                     </div>`;
+                                }
+                            } else {
+                                if (affectation.count && affectation.count !== '1') {
+                                    if (isPrinting) {
+                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 1px 2px; font-size: 6px; font-weight: bold; ${margin}">
+                                            <div>${affectation.name}</div>
+                                            <div style="font-size: 5px; font-style: italic;">(${affectation.count} personnes)</div>
+                                        </div>`;
+                                    } else {
+                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div>${affectation.name}</div>
+                                                    <div style="font-size: 10px; font-style: italic;">(${affectation.count} personnes)</div>
+                                                </div>
+                                                <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
+                                            </div>
+                                        </div>`;
+                                    }
+                                } else {
+                                    if (isPrinting) {
+                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 1px 2px; font-size: 6px; font-weight: bold; ${margin}">
+                                            <div>${affectation.name}</div>
+                                        </div>`;
+                                    } else {
+                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>${affectation.name}</div>
+                                                <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
+                                            </div>
+                                        </div>`;
+                                    }
                                 }
                             }
                         });
@@ -3904,7 +4022,14 @@
 
         // Imprimer le planning
         function printPlanning() {
-            window.print();
+            // Régénérer le tableau pour l'impression
+            generateChantierGrid();
+            updateWeekPlanning();
+            
+            // Attendre un court délai pour que les changements soient appliqués
+            setTimeout(() => {
+                window.print();
+            }, 100);
         }
 
         // Initialisation et synchronisation
