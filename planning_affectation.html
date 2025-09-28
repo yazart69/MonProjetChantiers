@@ -3001,11 +3001,11 @@
             
             // Première ligne : Documents/Photos avec QR Code
             tableHTML += '<tr>';
-            tableHTML += '<th style="background: #7c3aed; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">DOCUMENTS/PHOTOS</th>';
+            tableHTML += '<th style="background: #000000; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">DOCUMENTS/PHOTOS</th>';
             
             // Ajouter une zone pour documents/photos et QR code pour chaque chantier
             chantiersList.forEach((chantier, index) => {
-                tableHTML += `<th style="background: #7c3aed; color: white; padding: 8px; text-align: center; min-width: 120px;">
+                tableHTML += `<th style="background: #000000; color: white; padding: 8px; text-align: center; min-width: 120px;">
                     <div class="qr-generator-section" data-chantier="${chantier}" style="display: flex; flex-direction: column; gap: 4px;">
                         <input type="file" class="image-upload" data-chantier="${chantier}" accept="image/*" style="font-size: 8px; padding: 2px; border: 1px solid #ccc; border-radius: 3px; width: 100%;">
                         <button class="onedrive-qr-btn" data-chantier="${chantier}" style="font-size: 9px; padding: 2px 4px; border: none; background: #0078d4; color: white; border-radius: 3px; cursor: pointer; width: 100%;">OneDrive QR</button>
@@ -3018,18 +3018,18 @@
             });
             
             if (chantiersList.length === 0) {
-                tableHTML += '<th style="background: #7c3aed; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">DOCUMENTS/PHOTOS</th>';
+                tableHTML += '<th style="background: #000000; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">DOCUMENTS/PHOTOS</th>';
             }
             
             tableHTML += '</tr>';
             
             // Deuxième ligne : Statuts des chantiers
             tableHTML += '<tr>';
-            tableHTML += '<th style="background: #f59e0b; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">STATUT</th>';
+            tableHTML += '<th style="background: #fbbf24; color: #000000; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">STATUT</th>';
             
             // Ajouter une liste déroulante pour chaque chantier
             chantiersList.forEach((chantier, index) => {
-                tableHTML += `<th style="background: #f59e0b; color: white; padding: 8px; text-align: center; min-width: 120px;">
+                tableHTML += `<th style="background: #fbbf24; color: #000000; padding: 8px; text-align: center; min-width: 120px;">
                     <select class="chantier-status" data-chantier="${chantier}" style="width: 100%; font-size: 14px; font-weight: bold; padding: 4px; border: none; background: white; color: #333; border-radius: 3px;">
                         <option value="">-- Statut --</option>
                         <option value="demarrage">🚀 DÉMARRAGE</option>
@@ -3050,24 +3050,24 @@
             });
             
             if (chantiersList.length === 0) {
-                tableHTML += '<th style="background: #f59e0b; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">STATUT</th>';
+                tableHTML += '<th style="background: #fbbf24; color: #000000; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">STATUT</th>';
             }
             
             tableHTML += '</tr>';
             
             // Troisième ligne : Commentaires des chantiers
             tableHTML += '<tr>';
-            tableHTML += '<th style="background: #059669; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">COMMENTAIRE</th>';
+            tableHTML += '<th style="background: #2563eb; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">COMMENTAIRE</th>';
             
             // Ajouter une zone de texte pour chaque chantier
             chantiersList.forEach((chantier, index) => {
-                tableHTML += `<th style="background: #059669; color: white; padding: 8px; text-align: center; min-width: 120px;">
+                tableHTML += `<th style="background: #2563eb; color: white; padding: 8px; text-align: center; min-width: 120px;">
                     <textarea class="chantier-comment" data-chantier="${chantier}" placeholder="Commentaire..." style="width: 100%; font-size: 12px; padding: 4px; border: none; background: white; color: #333; border-radius: 3px; resize: none; min-height: 40px; max-height: 200px; overflow: hidden; line-height: 1.4;"></textarea>
                 </th>`;
             });
             
             if (chantiersList.length === 0) {
-                tableHTML += '<th style="background: #059669; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">COMMENTAIRE</th>';
+                tableHTML += '<th style="background: #2563eb; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">COMMENTAIRE</th>';
             }
             
             tableHTML += '</tr>';
