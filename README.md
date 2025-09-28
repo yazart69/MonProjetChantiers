@@ -124,7 +124,7 @@ http://localhost:8000
 - **Planification** des affectations
 - **Suivi de progression**
 
-### 📋 Affectations (`planning_affectation copie.html`)
+### 📋 Affectations (`planning_affectation.html`)
 - **Planification détaillée** des affectations
 - **Optimisation** des ressources
 - **Suivi des disponibilités**
