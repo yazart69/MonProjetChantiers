@@ -2274,7 +2274,7 @@
                         .map(member => ({
                             name: member.name,
                             role: member.role,
-                            type: member.role.toLowerCase().includes('chef') ? 'chef' : 'operateur',
+                            type: member.type === 'conducteur' ? 'conducteur' : (member.role.toLowerCase().includes('chef') ? 'chef' : 'operateur'),
                             employeeType: member.employeeType || member.type || 'employee', // Récupérer le type d'employé
                             status: member.status || 'available',
                             reason: member.reason || '',
@@ -2967,6 +2967,7 @@
         function updateWeekPlanning() {
             const currentWeek = document.getElementById('weekSelect').value;
             const table = document.getElementById('planningTable');
+            const isPrinting = window.matchMedia('print').matches;
             
             console.log('🚀 CRÉATION NOUVEAU TABLEAU ILLIMITÉ pour la semaine', currentWeek);
             
