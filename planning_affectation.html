@@ -3221,7 +3221,7 @@
                                                 <div>${affectation.name}</div>
                                                 <div style="font-size: 10px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
                                             </div>
-                                            <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
+                                            <button onclick="console.log('🔴 Bouton cliqué:', '${day}', '${chantier}', '${affectation.name}'); removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
                                         </div>
                                     </div>`;
                                 }
@@ -3239,7 +3239,7 @@
                                                     <div>${affectation.name}</div>
                                                     <div style="font-size: 10px; font-style: italic;">(${affectation.count} personnes)</div>
                                                 </div>
-                                                <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
+                                                <button onclick="console.log('🔴 Bouton cliqué:', '${day}', '${chantier}', '${affectation.name}'); removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
                                             </div>
                                         </div>`;
                                     }
@@ -3252,7 +3252,7 @@
                                         cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
                                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                                 <div>${affectation.name}</div>
-                                                <button onclick="removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
+                                                <button onclick="console.log('🔴 Bouton cliqué:', '${day}', '${chantier}', '${affectation.name}'); removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
                                             </div>
                                         </div>`;
                                     }
@@ -3605,6 +3605,12 @@
                 }
             }
         }
+
+        // Rendre la fonction accessible globalement
+        window.removeAffectation = removeAffectation;
+        
+        // Debug: Vérifier que la fonction est accessible
+        console.log('🔧 removeAffectation function available:', typeof window.removeAffectation);
 
         // Variables pour les statuts des chantiers
         let chantierStatusData = {};
