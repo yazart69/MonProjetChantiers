@@ -2439,11 +2439,9 @@
                         statusInfo = `<div class="member-status-unavailable">${statusLabels[member.status] || 'Indisponible'}</div>`;
                     }
 
-                // Ajouter l'emoji validé vert si affecté toute la semaine
-                // TEST: Forcer l'emoji pour ERTUGRUL pour debug
-                const forceEmoji = member.name === 'ERTUGRUL';
-                const nameWithEmoji = (isWeeklyAffected || forceEmoji) ? `${member.name} ✅` : member.name;
-                console.log('🎯 EMOJI DEBUG - Membre:', member.name, 'isWeeklyAffected:', isWeeklyAffected, 'forceEmoji:', forceEmoji, 'nameWithEmoji:', nameWithEmoji);
+                // Ajouter l'emoji validé vert si affecté toute la semaine - VERSION RADICALE
+                const nameWithEmoji = isWeeklyAffected ? `${member.name} ✅` : member.name;
+                console.log('🎯 VALIDATION RADICALE - Membre:', member.name, 'isWeeklyAffected:', isWeeklyAffected, 'nameWithEmoji:', nameWithEmoji);
                 
                 memberDiv.innerHTML = `
                     <div class="member-name">${nameWithEmoji}</div>
@@ -2500,11 +2498,9 @@
                         statusInfo = `<div class="member-status-unavailable">${statusLabels[interim.status] || 'Indisponible'}</div>`;
                     }
 
-                    // Ajouter l'emoji validé vert si affecté toute la semaine
-                    // TEST: Forcer l'emoji pour debug
-                    const forceEmoji = interim.name === 'NASSER MESSAL';
-                    const nameWithEmoji = (isWeeklyAffected || forceEmoji) ? `${interim.name} ✅` : interim.name;
-                    console.log('🎯 EMOJI DEBUG INTERIM - Membre:', interim.name, 'isWeeklyAffected:', isWeeklyAffected, 'forceEmoji:', forceEmoji, 'nameWithEmoji:', nameWithEmoji);
+                    // Ajouter l'emoji validé vert si affecté toute la semaine - VERSION RADICALE
+                    const nameWithEmoji = isWeeklyAffected ? `${interim.name} ✅` : interim.name;
+                    console.log('🎯 VALIDATION RADICALE INTERIM - Membre:', interim.name, 'isWeeklyAffected:', isWeeklyAffected, 'nameWithEmoji:', nameWithEmoji);
                     
                     interimDiv.innerHTML = `
                         <div class="member-name">${nameWithEmoji}</div>
@@ -2883,6 +2879,9 @@
             
             // Debug: afficher les données sauvegardées
             console.log('Données sauvegardées pour la semaine', currentWeek, ':', planningData[currentWeek]);
+            
+            // FORCER la mise à jour de la validation après affectation
+            generateTeamList();
             
             // Mettre à jour immédiatement le tableau
             updateWeekPlanning();
@@ -3503,10 +3502,12 @@
             }
         }
 
-        // Fonction pour vérifier si un membre est affecté toute la semaine
+        // Fonction pour vérifier si un membre est affecté toute la semaine - VERSION RADICALE
         function checkWeeklyAffectation(memberName, week) {
+            console.log(`🔍 VALIDATION RADICALE - Vérification pour ${memberName} semaine ${week}`);
+            
             if (!planningData[week]) {
-                console.log(`🔍 checkWeeklyAffectation: Pas de données pour la semaine ${week}`);
+                console.log(`🔍 Pas de données pour la semaine ${week}`);
                 return false;
             }
             
@@ -3529,11 +3530,12 @@
                 }
             });
             
-            console.log(`🔍 ${memberName} - Semaine ${week}: ${affectedDays} jours affectés (${affectedDaysList.join(', ')})`);
+            console.log(`🔍 ${memberName} - ${affectedDays} jours affectés: ${affectedDaysList.join(', ')}`);
             
-            // Considéré comme affecté toute la semaine si affecté sur au moins 4 jours
-            const isWeeklyAffected = affectedDays >= 4;
-            console.log(`🔍 ${memberName} - isWeeklyAffected: ${isWeeklyAffected}`);
+            // RADICAL: Seuil très bas pour tester - 2 jours minimum
+            const isWeeklyAffected = affectedDays >= 2;
+            console.log(`🔍 ${memberName} - VALIDATION: ${isWeeklyAffected} (${affectedDays}/5 jours)`);
+            
             return isWeeklyAffected;
         }
 
@@ -3585,29 +3587,51 @@
             }
         }
 
-        // Fonction pour supprimer une affectation
+        // Fonction pour supprimer une affectation - VERSION RADICALE
         function removeAffectation(day, chantier, memberName) {
-            console.log(`🗑️ Suppression affectation: ${memberName} sur ${chantier} le ${day}`);
+            console.log(`🗑️ SUPPRESSION RADICALE: ${memberName} sur ${chantier} le ${day}`);
             
             const currentWeek = document.getElementById('weekSelect').value;
+            console.log(`🗑️ Semaine courante: ${currentWeek}`);
             
-            if (planningData[currentWeek] && planningData[currentWeek][day] && planningData[currentWeek][day][chantier]) {
-                const affectations = planningData[currentWeek][day][chantier];
-                if (Array.isArray(affectations)) {
-                    // Filtrer pour supprimer l'affectation
-                    const beforeCount = affectations.length;
-                    planningData[currentWeek][day][chantier] = affectations.filter(affectation => affectation.name !== memberName);
-                    const afterCount = planningData[currentWeek][day][chantier].length;
-                    
-                    console.log(`✅ Affectation supprimée: ${beforeCount} -> ${afterCount} affectations`);
-                    
-                    // Sauvegarder les données
-                    savePlanningData();
-                    
-                    // Mettre à jour l'affichage
-                    updateWeekPlanning();
-                    updateSelectionCounter();
-                }
+            if (!planningData[currentWeek]) {
+                console.log(`❌ Pas de données pour la semaine ${currentWeek}`);
+                return;
+            }
+            
+            if (!planningData[currentWeek][day]) {
+                console.log(`❌ Pas de données pour le jour ${day}`);
+                return;
+            }
+            
+            if (!planningData[currentWeek][day][chantier]) {
+                console.log(`❌ Pas de données pour le chantier ${chantier}`);
+                return;
+            }
+            
+            const affectations = planningData[currentWeek][day][chantier];
+            console.log(`🗑️ Affectations avant suppression:`, affectations);
+            
+            if (Array.isArray(affectations)) {
+                const beforeCount = affectations.length;
+                planningData[currentWeek][day][chantier] = affectations.filter(affectation => affectation.name !== memberName);
+                const afterCount = planningData[currentWeek][day][chantier].length;
+                
+                console.log(`✅ SUPPRESSION RÉUSSIE: ${beforeCount} -> ${afterCount} affectations`);
+                
+                // Sauvegarder les données
+                savePlanningData();
+                
+                // Mettre à jour l'affichage
+                updateWeekPlanning();
+                updateSelectionCounter();
+                
+                // FORCER la mise à jour de la validation
+                generateTeamList();
+                
+                console.log(`✅ Affichage mis à jour après suppression`);
+            } else {
+                console.log(`❌ Les affectations ne sont pas un tableau:`, typeof affectations);
             }
         }
 
