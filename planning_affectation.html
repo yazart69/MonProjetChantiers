@@ -3580,6 +3580,32 @@
             }
         }
 
+        // Fonction pour supprimer une affectation
+        function removeAffectation(day, chantier, memberName) {
+            console.log(`🗑️ Suppression affectation: ${memberName} sur ${chantier} le ${day}`);
+            
+            const currentWeek = document.getElementById('weekSelect').value;
+            
+            if (planningData[currentWeek] && planningData[currentWeek][day] && planningData[currentWeek][day][chantier]) {
+                const affectations = planningData[currentWeek][day][chantier];
+                if (Array.isArray(affectations)) {
+                    // Filtrer pour supprimer l'affectation
+                    const beforeCount = affectations.length;
+                    planningData[currentWeek][day][chantier] = affectations.filter(affectation => affectation.name !== memberName);
+                    const afterCount = planningData[currentWeek][day][chantier].length;
+                    
+                    console.log(`✅ Affectation supprimée: ${beforeCount} -> ${afterCount} affectations`);
+                    
+                    // Sauvegarder les données
+                    savePlanningData();
+                    
+                    // Mettre à jour l'affichage
+                    updateWeekPlanning();
+                    updateSelectionCounter();
+                }
+            }
+        }
+
         // Variables pour les statuts des chantiers
         let chantierStatusData = {};
         
