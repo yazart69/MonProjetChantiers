@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - Gestionnaire Chantier</title>
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --primary-red: #dc2626;
+            --primary-orange: #ea580c;
+            --primary-blue: #2563eb;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --info: #0ea5e9;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--gray-50) 0%, #e0e7ff 100%);
+            color: var(--gray-900);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar unifiée avec fond noir */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: #000000;
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: transform 0.3s ease-in-out;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.5rem 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.7;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            border-left-color: #dc2626;
+            transform: translateX(5px);
+        }
+
+        .nav-item .icon {
+            display: inline-block;
+            width: 1.5rem;
+            margin-right: 0.75rem;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            padding: 2rem;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        /* Header */
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.15), rgba(234, 88, 12, 0.15));
+            border-radius: 50%;
+            transform: translate(40%, -40%);
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-red), var(--primary-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-red), var(--primary-orange));
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Chantiers Actifs */
+        .chantiers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chantier-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chantier-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--info));
+        }
+
+        .chantier-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .chantier-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .chantier-code {
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            margin-bottom: 1rem;
+        }
+
+        .chantier-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-red);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--gray-700);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Sidebar Info */
+        .info-section {
+            margin-bottom: 2rem;
+        }
+
+        .info-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-item {
+            background: var(--gray-50);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--primary-red);
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            background: #fef2f2;
+            transform: translateX(5px);
+        }
+
+        .info-item.warning {
+            border-left-color: var(--warning);
+        }
+
+        .info-item.danger {
+            border-left-color: var(--danger);
+        }
+
+        .info-item.success {
+            border-left-color: var(--success);
+        }
+
+        .info-item.info {
+            border-left-color: var(--info);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-red);
+        }
+
+        .info-description {
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            margin-top: 0.25rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--primary-red), var(--primary-orange));
+            color: white;
+            border: none;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .action-icon {
+            font-size: 2rem;
+        }
+
+        .action-text {
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, var(--primary-red), var(--primary-orange));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            margin: 0 auto 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.8rem;
+            color: var(--gray-700);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--gray-900);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chantiers-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Print Styles */
+        @media print {
+            .sidebar,
+            .header-actions,
+            .quick-actions {
+                display: none !important;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+            }
+            
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                🏗️ Gestionnaire Chantier
+            </div>
+            <div class="sidebar-subtitle">
+                Équipe 41 - Chasse sur Rhône
+            </div>
+        </div>
+        
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="index.html" class="nav-item active">
+                    <span class="icon">🏠</span>
+                    Tableau de Bord
+                </a>
+                <a href="planning.html" class="nav-item">
+                    <span class="icon">📅</span>
+                    Planning
+                </a>
+                <a href="pointage.html" class="nav-item">
+                    <span class="icon">⏰</span>
+                    Pointage
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Gestion</div>
+                <a href="equipe.html" class="nav-item">
+                    <span class="icon">👥</span>
+                    Équipe
+                </a>
+                <a href="materiaux.html" class="nav-item">
+                    <span class="icon">🔧</span>
+                    Travaux & Matériaux
+                </a>
+                <a href="reunion.html" class="nav-item">
+                    <span class="icon">🗓️</span>
+                    Réunions
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Outils</div>
+                <a href="planning_affectation.html" class="nav-item">
+                    <span class="icon">📋</span>
+                    Affectations
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="page-header">
+            <div class="header-content">
+                <div>
+                    <h1 class="page-title">🏠 Tableau de Bord</h1>
+                    <p class="page-subtitle">Vue d'ensemble • Équipe 41 Altrad Prezioso • <span id="current-date"></span></p>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn" onclick="window.print()" style="padding: 0.75rem 1.5rem; font-size: 0.9rem;">
+                        🖨️ Imprimer
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="stats-overview fade-in-up">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-title">Personnel Total</div>
+                <div class="stat-value" id="total-personnel">25</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-title">Disponibles</div>
+                <div class="stat-value" id="available-personnel">18</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏗️</div>
+                <div class="stat-title">Chantiers Actifs</div>
+                <div class="stat-value" id="active-chantiers">8</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏰</div>
+                <div class="stat-title">Heures Semaine</div>
+                <div class="stat-value" id="weekly-hours">850h</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Chantiers Actifs -->
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">🏗️</span>
+                        Chantiers Actifs
+                    </h2>
+                </div>
+                <div class="chantiers-grid" id="chantiers-grid">
+                    <!-- Les chantiers seront générés par JavaScript -->
+                </div>
+            </div>
+
+            <!-- Sidebar Info -->
+            <div class="sidebar-info">
+                <!-- Absences & Congés -->
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="card-icon">📋</span>
+                            État du Personnel
+                        </h2>
+                    </div>
+                    <div class="info-section">
+                        <h3 class="info-title">
+                            <span class="card-icon">🏥</span>
+                            Absences & Maladie
+                        </h3>
+                        <ul class="info-list" id="absences-list">
+                            <!-- Généré par JavaScript -->
+                        </ul>
+                    </div>
+                    <div class="info-section">
+                        <h3 class="info-title">
+                            <span class="card-icon">🏖️</span>
+                            Congés
+                        </h3>
+                        <ul class="info-list" id="conges-list">
+                            <!-- Généré par JavaScript -->
+                        </ul>
+                    </div>
+                    <div class="info-section">
+                        <h3 class="info-title">
+                            <span class="card-icon">🎓</span>
+                            Formations
+                        </h3>
+                        <ul class="info-list" id="formations-list">
+                            <!-- Généré par JavaScript -->
+                        </ul>
+                    </div>
+                    <div class="info-section">
+                        <h3 class="info-title">
+                            <span class="card-icon">📄</span>
+                            ODM à Préparer
+                        </h3>
+                        <ul class="info-list" id="odm-list">
+                            <!-- Généré par JavaScript -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions fade-in-up">
+            <a href="equipe.html" class="action-btn">
+                <div class="action-icon">👥</div>
+                <div class="action-text">Gestion Équipe</div>
+            </a>
+            <a href="planning.html" class="action-btn">
+                <div class="action-icon">📅</div>
+                <div class="action-text">Planning</div>
+            </a>
+            <a href="pointage.html" class="action-btn">
+                <div class="action-icon">⏰</div>
+                <div class="action-text">Pointage</div>
+            </a>
+            <a href="planning_affectation.html" class="action-btn">
+                <div class="action-icon">📋</div>
+                <div class="action-text">Affectations</div>
+            </a>
+            <a href="materiaux.html" class="action-btn">
+                <div class="action-icon">🔧</div>
+                <div class="action-text">Travaux & Matériaux</div>
+            </a>
+            <a href="reunion.html" class="action-btn">
+                <div class="action-icon">🗓️</div>
+                <div class="action-text">Réunions</div>
+            </a>
+        </div>
+    </main>
+
+    <script src="data_sync.js"></script>
+    <script>
+        // Données des chantiers actifs
+        const chantiersActifs = [
+            {
+                nom: "Grand Lyon – Pont de Chasse",
+                code: "2211113275",
+                personnel: 8,
+                progression: 75,
+                statut: "En cours"
+            },
+            {
+                nom: "VICHY",
+                code: "22341113974",
+                personnel: 6,
+                progression: 45,
+                statut: "En cours"
+            },
+            {
+                nom: "CAMPENON BERNARD",
+                code: "22441114303",
+                personnel: 5,
+                progression: 60,
+                statut: "En cours"
+            },
+            {
+                nom: "EFFIA PARKING BARET",
+                code: "22541114454",
+                personnel: 4,
+                progression: 30,
+                statut: "Démarrage"
+            },
+            {
+                nom: "FRAMATOME",
+                code: "22141100002",
+                personnel: 3,
+                progression: 90,
+                statut: "Finalisation"
+            },
+            {
+                nom: "Halle 9",
+                code: "22541114486",
+                personnel: 2,
+                progression: 25,
+                statut: "Préparation"
+            }
+        ];
+
+        // Données du personnel (simulées depuis le module équipe)
+        const personnelData = {
+            total: 25,
+            disponibles: 18,
+            absences: [
+                { nom: "NASSER MESSAL", raison: "Arrêt maladie", date: "10/09 - 24/09", type: "danger" },
+                { nom: "MORGADO ALEX", raison: "Formation ATEX", date: "15/09 - 19/09", type: "warning" },
+                { nom: "DJEBBAR Khalil", raison: "Formation ATEX", date: "15/09 - 19/09", type: "warning" }
+            ],
+            conges: [
+                { nom: "RIBEIRO-CASAL A", raison: "Congé annuel", date: "22/09 - 03/10", type: "info" }
+            ],
+            formations: [
+                { nom: "FARID MESSAL", raison: "Formation ISO", date: "29/09 - 01/10", type: "success" }
+            ],
+            odm: [
+                { nom: "LAARAJ", chantier: "EFFIA PARKING", date: "20/09 - 27/09", type: "warning" }
+            ]
+        };
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentDate();
+            renderChantiers();
+            loadPersonnelDataFromSync();
+            renderPersonnelInfo();
+            updateStats();
+            
+            // S'abonner au système de synchronisation centralisé
+            if (window.dataSyncManager) {
+                // S'abonner aux mises à jour d'équipe
+                window.dataSyncManager.subscribe('team', (teamData) => {
+                    console.log('Tableau de bord: Données d\'équipe mises à jour via synchronisation centralisée');
+                    loadPersonnelDataFromSync();
+                    renderPersonnelInfo();
+                    updateStats();
+                }, 'index');
+                
+                // S'abonner aux mises à jour de planning
+                window.dataSyncManager.subscribe('planning', (planningData) => {
+                    console.log('Tableau de bord: Données de planning mises à jour via synchronisation centralisée');
+                    // Mettre à jour les chantiers si nécessaire
+                    if (planningData.chantiers) {
+                        renderChantiers();
+                    }
+                }, 'index');
+            }
+        });
+
+        // Charger les données d'équipe depuis le système de synchronisation
+        function loadPersonnelDataFromSync() {
+            const syncData = window.dataSyncManager ? window.dataSyncManager.loadData('team') : null;
+            if (syncData && syncData.members) {
+                const members = syncData.members.filter(member => member.type !== 'contractor');
+                
+                // Mettre à jour les données du personnel
+                personnelData.total = members.length;
+                personnelData.disponibles = members.filter(m => m.status === 'available').length;
+                
+                // Mettre à jour les absences, congés, formations
+                personnelData.absences = members
+                    .filter(m => m.status === 'maladie')
+                    .map(m => ({
+                        nom: m.name,
+                        raison: m.reason || 'Arrêt maladie',
+                        date: m.dateDebut && m.dateFin ? 
+                            `${new Date(m.dateDebut).toLocaleDateString('fr-FR')} - ${new Date(m.dateFin).toLocaleDateString('fr-FR')}` : 
+                            'Non défini',
+                        type: 'danger'
+                    }));
+                
+                personnelData.conges = members
+                    .filter(m => m.status === 'conge')
+                    .map(m => ({
+                        nom: m.name,
+                        raison: m.reason || 'Congé',
+                        date: m.dateDebut && m.dateFin ? 
+                            `${new Date(m.dateDebut).toLocaleDateString('fr-FR')} - ${new Date(m.dateFin).toLocaleDateString('fr-FR')}` : 
+                            'Non défini',
+                        type: 'info'
+                    }));
+                
+                personnelData.formations = members
+                    .filter(m => m.status === 'formation')
+                    .map(m => ({
+                        nom: m.name,
+                        raison: m.reason || 'Formation',
+                        date: m.dateDebut && m.dateFin ? 
+                            `${new Date(m.dateDebut).toLocaleDateString('fr-FR')} - ${new Date(m.dateFin).toLocaleDateString('fr-FR')}` : 
+                            'Non défini',
+                        type: 'warning'
+                    }));
+                
+                personnelData.odm = members
+                    .filter(m => m.type === 'altrad-autres' && m.odmRequired)
+                    .map(m => ({
+                        nom: m.name,
+                        chantier: m.odmChantier || 'Non défini',
+                        date: m.odmDateDebut && m.odmDateFin ? 
+                            `${new Date(m.odmDateDebut).toLocaleDateString('fr-FR')} - ${new Date(m.odmDateFin).toLocaleDateString('fr-FR')}` : 
+                            'Non défini',
+                        type: 'warning'
+                    }));
+            }
+        }
+
+        // Mettre à jour la date actuelle
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('fr-FR', options);
+        }
+
+        // Rendre les chantiers actifs
+        function renderChantiers() {
+            const grid = document.getElementById('chantiers-grid');
+            grid.innerHTML = '';
+
+            chantiersActifs.forEach(chantier => {
+                const card = document.createElement('div');
+                card.className = 'chantier-card';
+                
+                const statutClass = getStatutClass(chantier.statut);
+                
+                card.innerHTML = `
+                    <div class="chantier-name">${chantier.nom}</div>
+                    <div class="chantier-code">Code: ${chantier.code}</div>
+                    <div class="chantier-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">${chantier.personnel}</div>
+                            <div class="stat-label">Personnel</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${chantier.progression}%</div>
+                            <div class="stat-label">Progression</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 0.5rem; background: ${statutClass.bg}; color: ${statutClass.color}; border-radius: 0.5rem; text-align: center; font-size: 0.9rem; font-weight: 600;">
+                        ${chantier.statut}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Obtenir la classe CSS pour le statut
+        function getStatutClass(statut) {
+            switch(statut) {
+                case 'En cours':
+                    return { bg: '#dbeafe', color: '#1e40af' };
+                case 'Démarrage':
+                    return { bg: '#fef3c7', color: '#d97706' };
+                case 'Finalisation':
+                    return { bg: '#dcfce7', color: '#16a34a' };
+                case 'Préparation':
+                    return { bg: '#f3e8ff', color: '#7c3aed' };
+                default:
+                    return { bg: '#f3f4f6', color: '#374151' };
+            }
+        }
+
+        // Rendre les informations du personnel
+        function renderPersonnelInfo() {
+            renderInfoList('absences-list', personnelData.absences);
+            renderInfoList('conges-list', personnelData.conges);
+            renderInfoList('formations-list', personnelData.formations);
+            renderInfoList('odm-list', personnelData.odm);
+        }
+
+        // Rendre une liste d'informations
+        function renderInfoList(listId, items) {
+            const list = document.getElementById(listId);
+            list.innerHTML = '';
+
+            if (items.length === 0) {
+                const item = document.createElement('li');
+                item.className = 'info-item success';
+                item.innerHTML = `
+                    <div class="info-label">Aucun élément</div>
+                    <div class="info-description">Tout est en ordre</div>
+                `;
+                list.appendChild(item);
+                return;
+            }
+
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = `info-item ${item.type}`;
+                li.innerHTML = `
+                    <div class="info-label">${item.nom}</div>
+                    <div class="info-value">${item.raison}</div>
+                    <div class="info-description">${item.date}</div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats() {
+            document.getElementById('total-personnel').textContent = personnelData.total;
+            document.getElementById('available-personnel').textContent = personnelData.disponibles;
+            document.getElementById('active-chantiers').textContent = chantiersActifs.length;
+            
+            // Calculer les heures hebdomadaires (simulation)
+            const totalHours = chantiersActifs.reduce((sum, chantier) => 
+                sum + (chantier.personnel * 35), 0);
+            document.getElementById('weekly-hours').textContent = `${totalHours}h`;
+        }
+
+        // Auto-refresh des données toutes les 5 minutes
+        setInterval(() => {
+            updateCurrentDate();
+            // Ici on pourrait recharger les données depuis les modules
+        }, 300000);
+
+        // Gestion des erreurs
+        window.addEventListener('error', function(e) {
+            console.error('Erreur dans le tableau de bord:', e.error);
+        });
+    </script>
+</body>
+</html>

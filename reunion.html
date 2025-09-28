@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionnaire Chantier - Module Réunion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --primary-red: #dc2626; --primary-orange: #ea580c; --success: #16a34a;
+            --gray-50: #f9fafb; --gray-900: #111827; --white: #ffffff;
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1); --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.6; }
+        .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh; background: #000000; color: white; z-index: 1000; overflow-y: auto; transition: transform 0.3s ease-in-out; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar-header { padding: 2rem 1.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .sidebar-subtitle { font-size: 0.9rem; opacity: 0.8; }
+        .sidebar-nav { padding: 1rem 0; }
+        .nav-section { margin-bottom: 2rem; }
+        .nav-section-title { padding: 0 1.5rem 0.5rem; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; opacity: 0.7; }
+        .nav-item { display: block; padding: 0.75rem 1.5rem; color: white; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; position: relative; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); border-left-color: #dc2626; transform: translateX(5px); }
+        .nav-item .icon { display: inline-block; width: 1.5rem; margin-right: 0.75rem; text-align: center; }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; padding: 2rem; transition: margin-left 0.3s ease-in-out; }
+        .page-header { background: var(--white); border-radius: 1rem; padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-md); border-left: 6px solid var(--primary-red); }
+        .header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem; }
+        .page-title { font-size: 2.2rem; font-weight: 700; background: linear-gradient(135deg, var(--primary-red), var(--primary-orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .page-subtitle { font-size: 1.1rem; color: #4b5563; }
+        .header-actions { display: flex; gap: 1rem; }
+        .mode-selector { background: var(--white); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-md); display: flex; gap: 1rem; justify-content: center; }
+        .mode-btn { padding: 1rem 1.5rem; border: 2px solid #e5e7eb; background: var(--white); color: #374151; font-weight: 600; cursor: pointer; transition: all 0.3s ease; border-radius: 0.75rem; }
+        .mode-btn.active { background: linear-gradient(135deg, var(--primary-red), var(--primary-orange)); color: white; border-color: transparent; }
+        .meeting-form { display: none; }
+        .meeting-form.active { display: block; }
+        .form-card { background: var(--white); border-radius: 1rem; padding: 2.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-md); border-top: 4px solid var(--primary-red); }
+        .form-title { font-size: 1.75rem; font-weight: 700; color: var(--primary-red); margin-bottom: 2rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-label { font-weight: 600; margin-bottom: 0.5rem; }
+        .form-input, .form-select, .form-textarea { padding: 0.8rem 1rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 1rem; }
+        .participants-section, .themes-section, .chantier-notes-section { background: var(--gray-50); border-radius: 1rem; padding: 2rem; margin: 2rem 0; }
+        .section-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 1.5rem; }
+        .participants-table table { width: 100%; border-collapse: collapse; }
+        .participants-table th { background: #f3f4f6; padding: 1rem; text-align: left; }
+        .participants-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; }
+        .btn { padding: 0.8rem 1.5rem; border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease; border-radius: 0.75rem; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-add { background: var(--success); color: white; margin-top: 1rem; }
+        .btn-remove { background: #dc2626; color: white; padding: 0.5rem; border: none; border-radius: 0.5rem; cursor: pointer; }
+        .form-actions { display: flex; gap: 1rem; justify-content: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #e5e7eb; }
+        .themes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .notes-item { background: white; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1rem; border: 1px solid #e5e7eb; }
+        .notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .other-chantier-input { display: none; margin-top: 0.5rem; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🏗️ Gestionnaire Chantier</div>
+            <div class="sidebar-subtitle">Équipe 41 - Chasse sur Rhône</div>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="index.html" class="nav-item"><span class="icon">🏠</span> Tableau de Bord</a>
+                <a href="planning.html" class="nav-item"><span class="icon">📅</span> Planning</a>
+                <a href="pointage.html" class="nav-item"><span class="icon">⏰</span> Pointage</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Gestion</div>
+                <a href="equipe.html" class="nav-item"><span class="icon">👥</span> Équipe</a>
+                <a href="materiaux.html" class="nav-item"><span class="icon">🔧</span> Travaux & Matériaux</a>
+                <a href="reunion.html" class="nav-item active"><span class="icon">🗓️</span> Réunions</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Outils</div>
+                <a href="planning_affectation.html" class="nav-item">
+                    <span class="icon">📋</span>
+                    Affectations
+                </a>
+            </div>
+        </div>
+    </nav>
+    <main class="main-content">
+        <header class="page-header">
+            <div class="header-content">
+                <div>
+                    <h1 class="page-title">🗓️ Module Réunion</h1>
+                    <p class="page-subtitle">Planifiez, suivez et archivez toutes vos réunions de chantier.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-success" onclick="printCurrentTab()">🖨️ Imprimer l'onglet actuel</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="demarrage">🚀 Réunion de Démarrage</button>
+            <button class="mode-btn" data-mode="chantier">🏗️ Réunion Chantier</button>
+            <button class="mode-btn" data-mode="equipe">👥 Réunion Équipe 41</button>
+        </div>
+
+        <div id="form-demarrage" class="meeting-form active">
+            <div class="form-card">
+                <h2 class="form-title">🚀 Réunion de Démarrage</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Date de la réunion</label>
+                        <input type="date" class="form-input" id="date-demarrage">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Heure de début</label>
+                        <input type="time" class="form-input" id="heure-debut-demarrage">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Heure de fin</label>
+                        <input type="time" class="form-input" id="heure-fin-demarrage">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Lieu de la réunion</label>
+                        <input type="text" class="form-input" placeholder="Ex: Bureau de chantier, Salle de réunion...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Animateur</label>
+                        <input type="text" class="form-input" placeholder="Nom de l'animateur">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Chantier concerné</label>
+                        <select class="form-select">
+                            <option value="">Sélectionner un chantier</option>
+                            <option value="Halle 9 - 22541114486">Halle 9 - 22541114486</option>
+                            <option value="Grand Lyon – Pont de Chasse - 2211113275">Grand Lyon – Pont de Chasse - 2211113275</option>
+                            <option value="VICHY - 22341113974">VICHY - 22341113974</option>
+                            <option value="CAMPENON BERNARD - 22441114303">CAMPENON BERNARD - 22441114303</option>
+                            <option value="EFFIA PARKING BARET">EFFIA PARKING BARET</option>
+                            <option value="EFFIA PARKING CANNES">EFFIA PARKING CANNES</option>
+                            <option value="Mirage 2000">Mirage 2000</option>
+                            <option value="QPARK FAVENTINE">QPARK FAVENTINE</option>
+                            <option value="BOUYGUE - VELODROME">BOUYGUE - VELODROME</option>
+                            <option value="FRAMATOME">FRAMATOME</option>
+                            <option value="Atelier St Maurice">Atelier St Maurice</option>
+                            <option value="SAINT GOBAIN - Atelier">SAINT GOBAIN - Atelier</option>
+                            <option value="EFFIA - MONTPELLIER">EFFIA - MONTPELLIER</option>
+                            <option value="EFFIA - Parking Cour JULIEN">EFFIA - Parking Cour JULIEN</option>
+                            <option value="CNR VAUGRIS">CNR VAUGRIS</option>
+                            <option value="QPARK HDV Marseille">QPARK HDV Marseille</option>
+                            <option value="EFFIA BEZIERS">EFFIA BEZIERS</option>
+                            <option value="EFFIA - Parking Chateaucreux">EFFIA - Parking Chateaucreux</option>
+                            <option value="ADISEO PONTICELLI">ADISEO PONTICELLI</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="participants-section">
+                    <h3 class="section-title">👥 Participants</h3>
+                    <div class="participants-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Équipe</th>
+                                    <th>Signature</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="presents-table">
+                                <!-- Les lignes seront ajoutées dynamiquement -->
+                            </tbody>
+                        </table>
+                        <button type="button" class="btn btn-add" onclick="addPresent()">➕ Ajouter un participant</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ordre du jour</label>
+                    <textarea class="form-textarea" rows="6" placeholder="1. Présentation du projet&#10;2. Objectifs et enjeux&#10;3. Planning prévisionnel&#10;4. Rôles et responsabilités&#10;5. Questions diverses"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Points abordés</label>
+                    <textarea class="form-textarea" rows="8" placeholder="Détailler les points discutés pendant la réunion..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Décisions prises</label>
+                    <textarea class="form-textarea" rows="6" placeholder="Liste des décisions prises avec les responsables et échéances..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Actions à suivre</label>
+                    <textarea class="form-textarea" rows="6" placeholder="Actions à réaliser avec responsables et dates butoir..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-success">💾 Sauvegarder</button>
+                    <button type="button" class="btn btn-success">📧 Envoyer par email</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="form-chantier" class="meeting-form">
+            <div class="form-card">
+                <h2 class="form-title">🏗️ Réunion Chantier</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Date de la réunion</label>
+                        <input type="date" class="form-input" id="date-chantier">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Heure de début</label>
+                        <input type="time" class="form-input" id="heure-debut-chantier">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Heure de fin</label>
+                        <input type="time" class="form-input" id="heure-fin-chantier">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Lieu de la réunion</label>
+                        <input type="text" class="form-input" placeholder="Ex: Bureau de chantier, Salle de réunion...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Animateur</label>
+                        <input type="text" class="form-input" placeholder="Nom de l'animateur">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Chantier concerné</label>
+                        <select class="form-select">
+                            <option value="">Sélectionner un chantier</option>
+                            <option value="Halle 9 - 22541114486">Halle 9 - 22541114486</option>
+                            <option value="Grand Lyon – Pont de Chasse - 2211113275">Grand Lyon – Pont de Chasse - 2211113275</option>
+                            <option value="VICHY - 22341113974">VICHY - 22341113974</option>
+                            <option value="CAMPENON BERNARD - 22441114303">CAMPENON BERNARD - 22441114303</option>
+                            <option value="EFFIA PARKING BARET">EFFIA PARKING BARET</option>
+                            <option value="EFFIA PARKING CANNES">EFFIA PARKING CANNES</option>
+                            <option value="Mirage 2000">Mirage 2000</option>
+                            <option value="QPARK FAVENTINE">QPARK FAVENTINE</option>
+                            <option value="BOUYGUE - VELODROME">BOUYGUE - VELODROME</option>
+                            <option value="FRAMATOME">FRAMATOME</option>
+                            <option value="Atelier St Maurice">Atelier St Maurice</option>
+                            <option value="SAINT GOBAIN - Atelier">SAINT GOBAIN - Atelier</option>
+                            <option value="EFFIA - MONTPELLIER">EFFIA - MONTPELLIER</option>
+                            <option value="EFFIA - Parking Cour JULIEN">EFFIA - Parking Cour JULIEN</option>
+                            <option value="CNR VAUGRIS">CNR VAUGRIS</option>
+                            <option value="QPARK HDV Marseille">QPARK HDV Marseille</option>
+                            <option value="EFFIA BEZIERS">EFFIA BEZIERS</option>
+                            <option value="EFFIA - Parking Chateaucreux">EFFIA - Parking Chateaucreux</option>
+                            <option value="ADISEO PONTICELLI">ADISEO PONTICELLI</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="participants-section">
+                    <h3 class="section-title">👥 Participants</h3>
+                    <div class="participants-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Équipe</th>
+                                    <th>Signature</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="presents-table-chantier">
+                                <!-- Les lignes seront ajoutées dynamiquement -->
+                            </tbody>
+                        </table>
+                        <button type="button" class="btn btn-add" onclick="addPresentChantier()">➕ Ajouter un participant</button>
+                    </div>
+                </div>
+
+                <div class="themes-section">
+                    <h3 class="section-title">📋 Thèmes abordés</h3>
+                    <div class="themes-grid">
+                        <label><input type="checkbox"> Sécurité</label>
+                        <label><input type="checkbox"> Qualité</label>
+                        <label><input type="checkbox"> Planning</label>
+                        <label><input type="checkbox"> Ressources</label>
+                        <label><input type="checkbox"> Matériaux</label>
+                        <label><input type="checkbox"> Équipements</label>
+                        <label><input type="checkbox"> Coordination</label>
+                        <label><input type="checkbox"> Problèmes techniques</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Points abordés</label>
+                    <textarea class="form-textarea" rows="8" placeholder="Détailler les points discutés pendant la réunion..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Décisions prises</label>
+                    <textarea class="form-textarea" rows="6" placeholder="Liste des décisions prises avec les responsables et échéances..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Actions à suivre</label>
+                    <textarea class="form-textarea" rows="6" placeholder="Actions à réaliser avec responsables et dates butoir..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-success">💾 Sauvegarder</button>
+                    <button type="button" class="btn btn-success">📧 Envoyer par email</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="form-equipe" class="meeting-form">
+            <div class="form-card">
+                <h2 class="form-title">👥 Réunion Équipe 41</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Date de la réunion</label>
+                        <input type="date" class="form-input" id="date-equipe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Heure de début</label>
+                        <input type="time" class="form-input" id="heure-debut-equipe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Heure de fin</label>
+                        <input type="time" class="form-input" id="heure-fin-equipe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Lieu de la réunion</label>
+                        <input type="text" class="form-input" placeholder="Ex: Bureau de chantier, Salle de réunion...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Animateur</label>
+                        <input type="text" class="form-input" placeholder="Nom de l'animateur">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type de réunion</label>
+                        <select class="form-select">
+                            <option value="">Sélectionner le type</option>
+                            <option value="hebdomadaire">Réunion hebdomadaire</option>
+                            <option value="mensuelle">Réunion mensuelle</option>
+                            <option value="exceptionnelle">Réunion exceptionnelle</option>
+                            <option value="formation">Formation</option>
+                            <option value="briefing">Briefing sécurité</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="participants-section">
+                    <h3 class="section-title">👥 Participants Équipe 41</h3>
+                    <div class="participants-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Équipe</th>
+                                    <th>Signature</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="presents-table-equipe">
+                                <!-- Les lignes seront ajoutées dynamiquement -->
+                            </tbody>
+                        </table>
+                        <button type="button" class="btn btn-add" onclick="addPresentEquipe()">➕ Ajouter un participant</button>
+                    </div>
+                </div>
+
+                <div class="themes-section">
+                    <h3 class="section-title">📋 Thèmes abordés</h3>
+                    <div class="themes-grid">
+                        <label><input type="checkbox"> Sécurité</label>
+                        <label><input type="checkbox"> Formation</label>
+                        <label><input type="checkbox"> Planning</label>
+                        <label><input type="checkbox"> Ressources humaines</label>
+                        <label><input type="checkbox"> Équipements</label>
+                        <label><input type="checkbox"> Coordination</label>
+                        <label><input type="checkbox"> Problèmes techniques</label>
+                        <label><input type="checkbox"> Retour d'expérience</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ordre du jour</label>
+                    <textarea class="form-textarea" rows="6" placeholder="1. Point sécurité&#10;2. Retour sur la semaine&#10;3. Planning à venir&#10;4. Problèmes rencontrés&#10;5. Formation/Information&#10;6. Questions diverses"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Points abordés</label>
+                    <textarea class="form-textarea" rows="8" placeholder="Détailler les points discutés pendant la réunion..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Décisions prises</label>
+                    <textarea class="form-textarea" rows="6" placeholder="Liste des décisions prises avec les responsables et échéances..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Actions à suivre</label>
+                    <textarea class="form-textarea" rows="6" placeholder="Actions à réaliser avec responsables et dates butoir..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-success">💾 Sauvegarder</button>
+                    <button type="button" class="btn btn-success">📧 Envoyer par email</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="data_sync.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // MISE À JOUR DE LA LISTE DES CHANTIERS
+            const chantiersList = [
+                'Halle 9 - 22541114486', 'Grand Lyon – Pont de Chasse - 2211113275', 'VICHY - 22341113974',
+                'CAMPENON BERNARD - 22441114303', 'EFFIA PARKING BARET', 'EFFIA PARKING CANNES', 'Mirage 2000',
+                'QPARK FAVENTINE', 'BOUYGUE - VELODROME', 'FRAMATOME', 'Atelier St Maurice', 'SAINT GOBAIN - Atelier',
+                'EFFIA - MONTPELLIER', 'EFFIA - Parking Cour JULIEN', 'CNR VAUGRIS', 'QPARK HDV Marseille',
+                'EFFIA BEZIERS', 'EFFIA - Parking Chateaucreux', 'ADISEO PONTICELLI'
+            ];
+            
+            // Écouter les mises à jour des affectations
+            window.addEventListener('affectationsUpdated', function(event) {
+                console.log('Réunion: Affectations mises à jour', event.detail);
+                // Mettre à jour l'affichage si nécessaire
+                // Ici on pourrait mettre à jour la liste des chantiers ou d'autres éléments
+            });
+            
+            // Écouter les changements de localStorage pour les affectations
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'planning_affectations') {
+                    console.log('Réunion: Données d\'affectations mises à jour via localStorage');
+                    // Mettre à jour l'affichage si nécessaire
+                }
+            });
+
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelector('.mode-btn.active').classList.remove('active');
+                    document.querySelector('.meeting-form.active').classList.remove('active');
+                    btn.classList.add('active');
+                    document.getElementById(`form-${btn.dataset.mode}`).classList.add('active');
+                });
+            });
+
+            window.addPresent = () => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" class="form-input" placeholder="Nom du participant"></td>
+                    <td><input type="text" class="form-input" value="41"></td>
+                    <td><input type="text" class="form-input" placeholder="Signature"></td>
+                    <td><button type="button" class="btn-remove" onclick="this.closest('tr').remove()">❌</button></td>`;
+                document.getElementById('presents-table').appendChild(row);
+            };
+
+            window.addPresentChantier = () => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" class="form-input" placeholder="Nom du participant"></td>
+                    <td><input type="text" class="form-input" value="41"></td>
+                    <td><input type="text" class="form-input" placeholder="Signature"></td>
+                    <td><button type="button" class="btn-remove" onclick="this.closest('tr').remove()">❌</button></td>`;
+                document.getElementById('presents-table-chantier').appendChild(row);
+            };
+
+            window.addPresentEquipe = () => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" class="form-input" placeholder="Nom du participant"></td>
+                    <td><input type="text" class="form-input" value="41"></td>
+                    <td><input type="text" class="form-input" placeholder="Signature"></td>
+                    <td><button type="button" class="btn-remove" onclick="this.closest('tr').remove()">❌</button></td>`;
+                document.getElementById('presents-table-equipe').appendChild(row);
+            };
+
+            window.addChantierNote = () => {
+                const container = document.getElementById('chantier-notes-container');
+                const noteDiv = document.createElement('div');
+                noteDiv.className = 'notes-item';
+                let options = chantiersList.map(c => `<option value="${c}">${c}</option>`).join('');
+                noteDiv.innerHTML = `
+                    <div class="notes-header">
+                        <select class="form-select" style="width: 300px;" onchange="handleChantierChange(this)">
+                            <option value="">Sélectionner un chantier</option>
+                            ${options}
+                            <option value="autre">Autre (préciser)...</option>
+                        </select>
+                        <button type="button" class="btn-remove" onclick="this.closest('.notes-item').remove()">❌</button>
+                    </div>
+                    <input type="text" class="form-input other-chantier-input" placeholder="Préciser le nom du chantier">
+                    <div class="form-group">
+                        <label class="form-label">Notes et observations</label>
+                        <textarea class="form-textarea" rows="4"></textarea>
+                    </div>`;
+                container.appendChild(noteDiv);
+            };
+            
+            window.handleChantierChange = (selectElement) => {
+                const otherInput = selectElement.parentElement.nextElementSibling;
+                otherInput.style.display = selectElement.value === 'autre' ? 'block' : 'none';
+            };
+
+            // Initialiser les dates avec la date du jour
+            document.querySelectorAll('input[type="date"]').forEach(input => input.valueAsDate = new Date());
+            
+            // Ajouter un participant par défaut dans chaque formulaire
+            addPresent();
+            addPresentChantier();
+            addPresentEquipe();
+            
+            // Écouter les mises à jour d'équipe
+            if (window.dataSyncManager) {
+                window.dataSyncManager.subscribe('reunion', (teamData) => {
+                    console.log('Réunions: Données d\'équipe mises à jour');
+                    // Ici on pourrait mettre à jour la liste des participants disponibles
+                });
+            }
+        });
+
+        // --- SCRIPT D'IMPRESSION CORRIGÉ ---
+        function printCurrentTab() {
+            const body = document.body;
+            body.classList.add('printing-mode');
+            window.addEventListener('afterprint', () => {
+                body.classList.remove('printing-mode');
+            }, { once: true });
+            window.print();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Équipe - Gestion de Chantier</title>
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --primary-red: #dc2626;
+            --primary-orange: #ea580c;
+            --primary-blue: #2563eb;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --info: #0ea5e9;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-900: #111827;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+        }
+
+        /* Sidebar unifiée avec fond noir */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: #000000;
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: transform 0.3s ease-in-out;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.5rem 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.7;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            border-left-color: #dc2626;
+            transform: translateX(5px);
+        }
+
+        .nav-item .icon {
+            display: inline-block;
+            width: 1.5rem;
+            margin-right: 0.75rem;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .content-with-sidebar {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .equipe-header {
+            background: var(--white);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            border-left: 6px solid var(--primary-red);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-red), var(--primary-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        /* Notifications - Positionnées en haut */
+        .notifications-section {
+            background: var(--white);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            order: -1; /* Force l'affichage en haut */
+        }
+
+        .notification-item {
+            background: var(--gray-50);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .notification-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .notification-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .notification-warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .notification-danger {
+            border-left: 4px solid var(--danger);
+        }
+
+        .notification-info {
+            border-left: 4px solid var(--info);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-red), var(--primary-orange));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-red);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        /* Tabs for different sections */
+        .tabs-container {
+            background: var(--white);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+        }
+
+        .tabs-header {
+            display: flex;
+            border-bottom: 1px solid var(--gray-200);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 1rem 2rem;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 1rem 1rem 0 0;
+            color: var(--gray-900);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: var(--gray-50);
+        }
+
+        .tab-btn.active {
+            background: var(--primary-red);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            padding: 2rem;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: var(--gray-50);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .filter-select,
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            background: var(--white);
+            min-width: 150px;
+        }
+
+        .search-input {
+            min-width: 250px;
+        }
+
+        .filter-select:focus,
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        /* Team Grid */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .member-card {
+            background: var(--white);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .member-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+        }
+
+        .member-card.available::before {
+            background: var(--success);
+        }
+
+        .member-card.available {
+            border: 2px solid var(--success);
+        }
+
+        .member-card.unavailable::before {
+            background: var(--danger);
+        }
+
+        .member-card.unavailable {
+            border: 2px solid var(--danger);
+        }
+
+        .member-card.formation::before {
+            background: var(--warning);
+        }
+
+        .member-card.formation {
+            border: 2px solid var(--warning);
+        }
+
+        .member-card.conge::before {
+            background: var(--info);
+        }
+
+        .member-card.conge {
+            border: 2px solid var(--info);
+        }
+
+        .member-card.maladie::before {
+            background: #9333ea;
+        }
+
+        .member-card.maladie {
+            border: 2px solid #9333ea;
+        }
+
+        .member-card.contractor::before {
+            background: var(--info);
+        }
+
+        /* Codes couleurs par type d'employé */
+        .member-card.employee::before {
+            background: #dc2626; /* Rouge pour employés */
+        }
+
+        .member-card.employee {
+            border: 2px solid #dc2626;
+        }
+
+        .member-card.interimaire::before {
+            background: #2563eb; /* Bleu pour intérimaires */
+        }
+
+        .member-card.interimaire {
+            border: 2px solid #2563eb;
+        }
+
+        .member-card.altrad-autres::before {
+            background: #7c3aed; /* Violet pour Altrad autres */
+        }
+
+        .member-card.altrad-autres {
+            border: 2px solid #7c3aed;
+        }
+
+        .member-card.contractor::before {
+            background: #fbbf24; /* Jaune pour sous-traitants */
+        }
+
+        .member-card.contractor {
+            border: 2px solid #fbbf24;
+        }
+
+        /* Styles pour la légende des couleurs */
+        .color-legend {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: 0.5rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .legend-item {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .legend-item.employee {
+            background: #dc2626;
+            color: white;
+        }
+
+        .legend-item.interimaire {
+            background: #2563eb;
+            color: white;
+        }
+
+        .legend-item.altrad-autres {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .legend-item.contractor {
+            background: #fbbf24;
+            color: #000000;
+        }
+
+        .member-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .member-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .member-avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            background: linear-gradient(135deg, var(--primary-red), var(--primary-orange));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .contractor-avatar {
+            background: linear-gradient(135deg, var(--info), var(--primary-blue));
+        }
+
+        .member-info h3 {
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            font-size: 1rem;
+        }
+
+        .member-role {
+            color: var(--primary-red);
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .member-type {
+            background: var(--gray-100);
+            color: var(--gray-900);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-top: 0.3rem;
+            display: inline-block;
+        }
+
+        .member-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-align: center;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        .status-available {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-unavailable {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .status-formation {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .status-conge {
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--info);
+        }
+
+        .status-maladie {
+            background: rgba(147, 51, 234, 0.1);
+            color: #9333ea;
+        }
+
+        .status-contractor {
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--info);
+        }
+
+        .member-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin: 1rem 0;
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-value {
+            font-weight: 700;
+            color: var(--primary-red);
+            font-size: 1.1rem;
+        }
+
+        .detail-label {
+            font-size: 0.7rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.2rem;
+        }
+
+        .member-skills {
+            margin: 1rem 0;
+        }
+
+        .skills-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .skill-tag {
+            background: var(--gray-100);
+            color: var(--gray-900);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 0.4rem;
+            justify-content: center;
+            margin-top: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-red);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        /* ODM Section Styles */
+        .odm-section {
+            background: var(--gray-50);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .odm-title {
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .odm-checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .odm-dates {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .odm-dates.show {
+            display: grid;
+        }
+
+        .odm-affectation {
+            display: none;
+            margin-bottom: 1rem;
+        }
+
+        .odm-affectation.show {
+            display: block;
+        }
+
+        .odm-input {
+            padding: 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            width: 100%;
+        }
+
+        .odm-select {
+            padding: 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            width: 100%;
+            background: white;
+        }
+
+        .odm-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        /* Affectation Section pour tous */
+        .affectation-section {
+            background: var(--gray-50);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--success);
+        }
+
+        .affectation-title {
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-with-sidebar {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* NOUVELLES RÈGLES D'IMPRESSION OPTIMISÉES */
+        @media print {
+            @page {
+                size: A4;
+                margin: 1cm;
+            }
+
+            body {
+                font-size: 10pt;
+                color: #000;
+                background: #fff;
+            }
+
+            /* Cacher tous les éléments inutiles */
+            .sidebar, .equipe-header, .stats-grid, .tabs-header, .filters-section, .member-actions, .btn, .modal {
+                display: none !important;
+            }
+
+            /* Afficher seulement le contenu principal */
+            .content-with-sidebar {
+                margin-left: 0;
+                padding: 0;
+            }
+            .tabs-container, .tab-content {
+                display: block !important;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+                border: none;
+            }
+
+            /* Afficher les alertes en premier */
+            .notifications-section {
+                display: block !important;
+                order: -1;
+                margin-bottom: 1cm;
+            }
+
+            /* Ajouter un titre au document imprimé */
+            .team-grid::before {
+                content: 'Liste du personnel en formation ou absence';
+                display: block;
+                font-size: 16pt;
+                font-weight: bold;
+                margin-bottom: 1cm;
+                text-align: center;
+            }
+            
+            .team-grid {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            
+            /* Cacher toutes les fiches par défaut */
+            .member-card {
+                display: none !important;
+            }
+            
+            /* Afficher UNIQUEMENT les membres en congé, maladie ou formation */
+            .member-card.conge, .member-card.maladie, .member-card.formation {
+                display: block !important;
+                padding: 0.5rem;
+                margin-bottom: 0.5rem;
+                border: 1px solid var(--gray-300);
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+            
+            /* Simplifier l'affichage des fiches pour l'impression */
+            .member-card .member-header {
+                margin-bottom: 0.5rem;
+            }
+            .member-card .member-avatar {
+                width: 2.5rem;
+                height: 2.5rem;
+                font-size: 1rem;
+            }
+            .member-card .member-info h3 {
+                font-size: 11pt;
+                margin-bottom: 0.1rem;
+            }
+            .member-card .member-role {
+                font-size: 9pt;
+            }
+            .member-card .member-status {
+                font-size: 9pt;
+                padding: 0.2rem 0.4rem;
+                margin-top: 0.2rem;
+                text-transform: none; /* Rendre le texte plus lisible */
+            }
+            
+            /* Cacher les détails non pertinents pour cette impression */
+            .member-details, .member-skills, .member-type, .member-card::before, .odm-section, .affectation-section, .color-legend {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🏗️ Gestionnaire Chantier</div>
+            <div class="sidebar-subtitle">Équipe 41 - Chasse sur Rhône</div>
+        </div>
+        
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="index.html" class="nav-item">
+                    <span class="icon">🏠</span>
+                    Tableau de Bord
+                </a>
+                <a href="planning.html" class="nav-item">
+                    <span class="icon">📅</span>
+                    Planning
+                </a>
+                <a href="pointage.html" class="nav-item">
+                    <span class="icon">⏰</span>
+                    Pointage
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Gestion</div>
+                <a href="equipe.html" class="nav-item active">
+                    <span class="icon">👥</span>
+                    Équipe
+                </a>
+                <a href="materiaux.html" class="nav-item">
+                    <span class="icon">🔧</span>
+                    Travaux & Matériaux
+                </a>
+                <a href="reunion.html" class="nav-item">
+                    <span class="icon">🗓️</span>
+                    Réunions
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Outils</div>
+                <a href="planning_affectation.html" class="nav-item">
+                    <span class="icon">📋</span>
+                    Affectations
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-with-sidebar">
+        <!-- Alertes positionnées en haut -->
+        <div class="notifications-section">
+            <h2 class="section-title">🔔 Alertes Équipe</h2>
+            <div id="notifications-container">
+            </div>
+        </div>
+
+        <div class="equipe-header">
+            <div class="header-content">
+                <div>
+                    <h1 class="page-title">👥 Gestion d'Équipe</h1>
+                    <p class="page-subtitle">Équipe 41 - Chasse sur Rhône • Altrad Prezioso</p>
+                </div>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-success" onclick="window.print()">🖨️ Imprimer</button>
+                    <button class="btn btn-primary" onclick="openAddMemberModal()">➕ Nouveau Membre</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="total-members">25</div>
+                <div class="stat-label">Membres Totaux</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="available-members">18</div>
+                <div class="stat-label">Disponibles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎓</div>
+                <div class="stat-value" id="formation-members">3</div>
+                <div class="stat-label">En Formation</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-value" id="contractors-count">4</div>
+                <div class="stat-label">Sous-traitants</div>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="personnel">👷 Personnel</button>
+                <button class="tab-btn" data-tab="sous-traitants">🏢 Sous-traitants</button>
+            </div>
+
+            <div class="tab-content active" id="tab-personnel">
+                <div class="filters-section">
+                    <div class="filter-group">
+                        <label class="filter-label">🔍 Rechercher :</label>
+                        <input type="text" class="search-input" id="search-members" placeholder="Nom, rôle, compétences...">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">📋 Statut :</label>
+                        <select class="filter-select" id="filter-status">
+                            <option value="">Tous</option>
+                            <option value="available">Disponible</option>
+                            <option value="unavailable">Indisponible</option>
+                            <option value="formation">Formation</option>
+                            <option value="conge">En congé</option>
+                            <option value="maladie">Arrêt maladie</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">🛠️ Compétence :</label>
+                        <select class="filter-select" id="filter-skill">
+                            <option value="">Toutes</option>
+                            <option value="pistoleur">Pistoleur</option>
+                            <option value="sableur">Sableur</option>
+                            <option value="grenailleur">Grenailleur</option>
+                            <option value="forme-amiante">Formé amiante</option>
+                            <option value="forme-plomb">Formé plomb</option>
+                            <option value="caces-nacelle">CACES nacelle</option>
+                            <option value="acqpa">ACQPA</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="resetFilters()">🔄 Réinitialiser</button>
+                </div>
+
+                <!-- Légende des codes couleurs -->
+                <div class="color-legend">
+                    <div class="legend-title">Codes couleurs par type d'employé :</div>
+                    <div class="legend-items">
+                        <div class="legend-item employee">Employés</div>
+                        <div class="legend-item interimaire">Intérimaires</div>
+                        <div class="legend-item altrad-autres">Altrad Autres</div>
+                        <div class="legend-item contractor">Sous-traitants</div>
+                    </div>
+                </div>
+
+                <div class="team-grid" id="team-grid">
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-sous-traitants">
+                <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h3>🏢 Sous-traitants Partenaires</h3>
+                    <button class="btn btn-primary" onclick="openAddContractorModal()">➕ Nouveau Sous-traitant</button>
+                </div>
+
+                <div class="team-grid" id="contractors-grid">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="memberModal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-title">➕ Nouveau Membre</h3>
+            <form id="memberForm">
+                <input type="hidden" id="edit-member-id" value="">
+                
+                <div class="form-group">
+                    <label class="form-label">Nom complet</label>
+                    <input type="text" class="form-input" id="member-name" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" id="member-type" required onchange="toggleODMSection()">
+                            <option value="employee">Employé</option>
+                            <option value="interimaire">Intérimaire</option>
+                            <option value="altrad-autres">Altrad autres</option>
+                            <option value="contractor">Sous-traitant</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Rôle</label>
+                        <select class="form-select" id="member-role" required>
+                            <option value="">Sélectionner un rôle</option>
+                            <option value="Responsable d'agence">Responsable d'agence</option>
+                            <option value="Chargé d'affaires">Chargé d'affaires</option>
+                            <option value="Conducteur de travaux">Conducteur de travaux</option>
+                            <option value="Chef de chantier">Chef de chantier</option>
+                            <option value="Chef d'équipe">Chef d'équipe</option>
+                            <option value="HSE">HSE</option>
+                            <option value="Opérateur">Opérateur</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section ODM pour Altrad autres -->
+                <div id="odm-section" class="odm-section" style="display: none;">
+                    <div class="odm-title">📋 Ordre De Mission</div>
+                    
+                    <div class="odm-checkbox-group">
+                        <input type="checkbox" id="odm-required" onchange="toggleODMFields()">
+                        <label for="odm-required">ODM requis</label>
+                    </div>
+
+                    <div id="odm-dates" class="odm-dates">
+                        <div>
+                            <label class="odm-label">Date début</label>
+                            <input type="date" class="odm-input" id="odm-date-debut">
+                        </div>
+                        <div>
+                            <label class="odm-label">Date fin</label>
+                            <input type="date" class="odm-input" id="odm-date-fin">
+                        </div>
+                    </div>
+
+                    <div id="odm-affectation" class="odm-affectation">
+                        <label class="odm-label">Affectation ODM</label>
+                        <input type="text" class="odm-input" id="odm-chantier-manuel" placeholder="Saisir le chantier pour l'ODM">
+                    </div>
+                </div>
+
+                <!-- Section Affectation pour tous -->
+                <div class="affectation-section">
+                    <div class="affectation-title">🏗️ Affectation Chantier</div>
+                    <label class="odm-label">Chantier actuel</label>
+                    <input type="text" class="odm-input" id="chantier-actuel" placeholder="Saisir le chantier d'affectation">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Statut</label>
+                    <select class="form-select" id="member-status" required onchange="toggleStatusFields()">
+                        <option value="available">Disponible</option>
+                        <option value="unavailable">Indisponible</option>
+                        <option value="formation">En formation</option>
+                        <option value="conge">En congé</option>
+                        <option value="maladie">Arrêt maladie</option>
+                    </select>
+                </div>
+
+                <div id="status-dates" style="display: none;">
+                    <label class="form-label">Période (du - au)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <input type="date" class="form-input" id="date-debut">
+                        <input type="date" class="form-input" id="date-fin">
+                    </div>
+                </div>
+
+                <div id="status-reason" style="display: none;">
+                    <label class="form-label">Raison</label>
+                    <input type="text" class="form-input" id="member-reason" placeholder="Préciser la raison">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Téléphone</label>
+                        <input type="tel" class="form-input" id="member-phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="member-email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Compétences/Formations</label>
+                    <div id="skills-container" style="max-height: 200px; overflow-y: auto; border: 2px solid var(--gray-200); border-radius: 0.5rem; padding: 1rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="pistoleur"> Pistoleur
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="sableur"> Sableur
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="grenailleur"> Grenailleur
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="sst"> Sauveteur Secouriste du Travail (SST)
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="gies1"> GIES 1
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="gies2"> GIES 2
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="acqpa"> Certification ACQPA
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="acqpa2"> Certification ACQPA 2
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="echafaudage"> Montage et démontage d'échafaudage
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="cqp-peintre"> CQP Peintre Anticorrosion / Industriel
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="habilitation-chimique"> Habilitation chimique GIES
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="habilitation-nucleaire"> Habilitation nucléaire (SCN, HN, PR)
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="habilitation-electrique"> Habilitation électrique H0/B0
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="caces-nacelle"> CACES R486 (nacelles)
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="formation-atex"> Formation ATEX
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="travaux-hauteur"> Formation Travaux en hauteur
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="formation-plomb"> Formation Plomb
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="amiante-ss4-technique"> Formation Amiante SS4 technique
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="amiante-ss4-encadrant"> Formation Amiante SS4 encadrant
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="amiante-ss3"> Formation Amiante SS3
+                            </label>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                <input type="checkbox" value="autres" id="autres-checkbox" onchange="toggleAutresField()"> AUTRES (préciser)
+                            </label>
+                            <input type="text" id="autres-text" placeholder="Préciser les autres compétences..." style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 0.25rem; display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeMemberModal()" style="background: var(--gray-200); color: var(--gray-900);">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Ajouter</button>
+                </div>
+            </form>
+
+            <button onclick="closeMemberModal()" style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+        </div>
+    </div>
+
+    <script src="data_sync.js"></script>
+    <script>
+        // --- DÉBUT : GESTION DE LA SAUVEGARDE AUTOMATIQUE ---
+        function saveDataToStorage() {
+            try {
+                // Utiliser le système de synchronisation centralisé
+                if (window.dataSyncManager) {
+                    window.dataSyncManager.saveData('team', teamData);
+                } else {
+                    // Fallback vers l'ancien système
+                    localStorage.setItem('gestionChantierTeamData', JSON.stringify(teamData));
+                }
+                console.log('Données de l\'équipe sauvegardées et synchronisées automatiquement.');
+            } catch (e) {
+                console.error('Erreur lors de la sauvegarde des données:', e);
+            }
+        }
+        window.addEventListener('beforeunload', saveDataToStorage);
+
+        function loadDataFromStorage() {
+            try {
+                // Utiliser le système de synchronisation centralisé
+                if (window.dataSyncManager) {
+                    const data = window.dataSyncManager.loadData('team');
+                    return data || defaultTeamData;
+                } else {
+                    // Fallback vers l'ancien système
+                    const savedData = localStorage.getItem('gestionChantierTeamData');
+                    return savedData ? JSON.parse(savedData) : defaultTeamData;
+                }
+            } catch (e) {
+                console.error('Impossible de charger les données sauvegardées, utilisation des données par défaut.', e);
+                return defaultTeamData;
+            }
+        }
+        // --- FIN : GESTION DE LA SAUVEGARDE AUTOMATIQUE ---
+
+        let defaultTeamData = {
+            members: [
+                { id: 1, name: 'Martin Hangard', role: 'Responsable d\'agence', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'martin.hangard@altrad.fr', skills: ['management', 'commercial', 'gestion'], experience: 15, chantierActuel: 'Direction', heuresSemaine: 42 },
+                { id: 2, name: 'Sylvain Garreau', role: 'Chargé d\'affaires', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'sylvain.garreau@altrad.fr', skills: ['commercial', 'devis', 'suivi-client'], experience: 10, chantierActuel: 'Commercial', heuresSemaine: 40 },
+                { id: 3, name: 'Ertugrul', role: 'Conducteur de travaux', status: 'available', type: 'employee', phone: '06.12.34.56.78', email: 'ertugrul@altrad.fr', skills: ['management', 'planning', 'qualité'], experience: 8, chantierActuel: 'VICHY', heuresSemaine: 45 },
+                { id: 4, name: 'Lou Piedigrossi', role: 'HSE', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'lou.piedigrossi@altrad.fr', skills: ['sécurité', 'environnement', 'formation'], experience: 6, chantierActuel: 'Multi-sites', heuresSemaine: 38 },
+                { id: 5, name: 'A MOHAMED', role: 'Opérateur', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'a.mohamed@altrad.fr', skills: ['pistoleur', 'sableur'], experience: 4, chantierActuel: 'CAMPENON BERNARD', heuresSemaine: 37 },
+                { id: 6, name: 'ANTUNEZ LOIC', role: 'Chef d\'équipe', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'loic.antunez@altrad.fr', skills: ['grenailleur', 'forme-amiante'], experience: 6, chantierActuel: 'EFFIA PARKING', heuresSemaine: 40 },
+                { id: 7, name: 'BLANC MARQUIS D', role: 'Opérateur', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'marquis.blanc@altrad.fr', skills: ['pistoleur', 'acqpa'], experience: 7, chantierActuel: 'VICHY', heuresSemaine: 35 },
+                { id: 8, name: 'CLEMENTE MICKAEL', role: 'Opérateur', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'mickael.clemente@altrad.fr', skills: ['caces-nacelle', 'sableur'], experience: 5, chantierActuel: 'PONT DE CHASSE', heuresSemaine: 38 },
+                { id: 9, name: 'CUKUR AYHAN', role: 'Chef de chantier', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'ayhan.cukur@altrad.fr', skills: ['management', 'grenailleur'], experience: 9, chantierActuel: 'CAMPENON BERNARD', heuresSemaine: 42 },
+                { id: 10, name: 'CUKUR MUSTAFA', role: 'Opérateur', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'mustafa.cukur@altrad.fr', skills: ['sableur', 'pistoleur'], experience: 11, chantierActuel: 'VICHY', heuresSemaine: 39 },
+                { id: 11, name: 'MORGADO ALEX', role: 'Opérateur', status: 'formation', reason: 'Formation ATEX', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'alex.morgado@altrad.fr', skills: ['pistoleur', 'forme-amiante'], experience: 3, chantierActuel: 'Formation', heuresSemaine: 0, dateDebut: '2025-09-15', dateFin: '2025-09-19' },
+                { id: 12, name: 'ROCHDI YOUSSEF', role: 'Opérateur', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'youssef.rochdi@altrad.fr', skills: ['grenailleur', 'sableur'], experience: 4, chantierActuel: 'EFFIA PARKING', heuresSemaine: 36 },
+                { id: 13, name: 'GRANDADAM G', role: 'Chef de chantier', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'g.grandadam@altrad.fr', skills: ['management', 'acqpa'], experience: 8, chantierActuel: 'VICHY', heuresSemaine: 35 },
+                { id: 14, name: 'HADIDI A', role: 'Opérateur', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'a.hadidi@altrad.fr', skills: ['pistoleur', 'caces-nacelle'], experience: 6, chantierActuel: 'CAMPENON BERNARD', heuresSemaine: 40 },
+                { id: 15, name: 'ROBIC NICOLAS', role: 'Opérateur', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'nicolas.robic@altrad.fr', skills: ['caces-nacelle', 'forme-plomb'], experience: 7, chantierActuel: 'PONT DE CHASSE', heuresSemaine: 37 },
+                { id: 16, name: 'RIBEIRO-CASAL A', role: 'Chef d\'équipe', status: 'conge', reason: 'Congé annuel', dateDebut: '2025-09-22', dateFin: '2025-10-03', type: 'employee', phone: '06.34.56.78.90', email: 'antonio.ribeiro@altrad.fr', skills: ['grenailleur', 'sableur', 'forme-amiante'], experience: 12, chantierActuel: 'Congé', heuresSemaine: 0 },
+                { id: 17, name: 'MOREAU JC', role: 'Chef d\'équipe', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'jc.moreau@altrad.fr', skills: ['management', 'pistoleur', 'acqpa'], experience: 15, chantierActuel: 'EFFIA PARKING', heuresSemaine: 38 },
+                { id: 18, name: 'FARID MESSAL', role: 'HSE', status: 'formation', reason: 'Formation ISO', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'farid.messal@altrad.fr', skills: ['sécurité', 'environnement'], experience: 5, chantierActuel: 'Formation', heuresSemaine: 0, dateDebut: '2025-09-29', dateFin: '2025-10-01' },
+                { id: 19, name: 'MENDY jeune', role: 'Opérateur', status: 'available', type: 'interimaire', phone: '06.XX.XX.XX.XX', email: 'mendy.jeune@interim.fr', skills: ['pistoleur', 'sableur'], experience: 1, chantierActuel: 'VICHY', heuresSemaine: 35 },
+                { id: 20, name: 'Ag45-1', role: 'Opérateur', status: 'available', type: 'interimaire', phone: '06.XX.XX.XX.XX', email: 'ag45-1@interim.fr', skills: ['grenailleur', 'sableur'], experience: 2, chantierActuel: 'CAMPENON BERNARD', heuresSemaine: 40 },
+                { id: 21, name: 'MENDY Doyen', role: 'Chef d\'équipe', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'mendy.doyen@altrad.fr', skills: ['pistoleur', 'acqpa', 'forme-amiante'], experience: 20, chantierActuel: 'PONT DE CHASSE', heuresSemaine: 35 },
+                { id: 22, name: 'DJEBBAR Khalil', role: 'Opérateur', status: 'formation', reason: 'Formation ATEX', type: 'employee', phone: '06.23.45.67.89', email: 'khalil.djebbar@altrad.fr', skills: ['pistoleur', 'grenailleur', 'caces-nacelle'], experience: 5, chantierActuel: 'Formation', heuresSemaine: 0, dateDebut: '2025-09-15', dateFin: '2025-09-19' },
+                { id: 23, name: 'NASSER MESSAL', role: 'Opérateur', status: 'maladie', reason: 'Arrêt maladie', dateDebut: '2025-09-10', dateFin: '2025-09-24', type: 'employee', phone: '06.45.67.89.01', email: 'nasser.messal@altrad.fr', skills: ['pistoleur', 'sableur'], experience: 6, chantierActuel: 'Arrêt maladie', heuresSemaine: 0 },
+                { id: 24, name: 'LAARAJ', role: 'Opérateur', status: 'available', type: 'altrad-autres', phone: '06.XX.XX.XX.XX', email: 'laaraj@altrad.fr', skills: ['grenailleur', 'forme-plomb'], experience: 8, chantierActuel: 'EFFIA PARKING', heuresSemaine: 38, odmRequired: true, odmDateDebut: '2025-09-20', odmDateFin: '2025-09-27', odmChantier: 'EFFIA PARKING' }
+            ],
+            contractors: [
+                { id: 101, name: 'EURO PEINTURE', type: 'contractor', role: 'Spécialiste Peinture', status: 'available', phone: '04.XX.XX.XX.XX', email: 'contact@europeinture.fr', skills: ['pistoleur', 'finition'], specialite: 'Peinture industrielle et décorative', disponible: true },
+                { id: 102, name: 'SAINT\'ELEC', type: 'contractor', role: 'Électricien', status: 'available', phone: '04.XX.XX.XX.XX', email: 'contact@saintelec.fr', skills: ['électricité', 'installation'], specialite: 'Installations électriques industrielles', disponible: true },
+                { id: 103, name: 'GUILLE Pascal', type: 'contractor', role: 'Spécialiste', status: 'available', phone: '06.XX.XX.XX.XX', email: 'pascal.guille@freelance.fr', skills: ['grenailleur', 'forme-amiante'], specialite: 'Grenaillage et préparation surface', disponible: true },
+                { id: 104, name: 'AUTRES', type: 'contractor', role: 'Divers', status: 'available', phone: 'Variable', email: 'Variable', skills: ['divers'], specialite: 'Autres sous-traitants selon besoins', disponible: true }
+            ],
+            pointageHistory: {}
+        };
+
+        let teamData = loadDataFromStorage() || defaultTeamData;
+        let isEditMode = false;
+
+        // Fonctions pour la gestion ODM
+        function toggleODMSection() {
+            const memberType = document.getElementById('member-type').value;
+            const odmSection = document.getElementById('odm-section');
+            
+            if (memberType === 'altrad-autres') {
+                odmSection.style.display = 'block';
+            } else {
+                odmSection.style.display = 'none';
+                // Réinitialiser les champs ODM
+                document.getElementById('odm-required').checked = false;
+                toggleODMFields();
+            }
+        }
+
+        function toggleODMFields() {
+            const odmRequired = document.getElementById('odm-required').checked;
+            const odmDates = document.getElementById('odm-dates');
+            const odmAffectation = document.getElementById('odm-affectation');
+            
+            if (odmRequired) {
+                odmDates.classList.add('show');
+                odmAffectation.classList.add('show');
+            } else {
+                odmDates.classList.remove('show');
+                odmAffectation.classList.remove('show');
+            }
+        }
+
+        function toggleStatusFields() {
+            const status = document.getElementById('member-status').value;
+            const statusDates = document.getElementById('status-dates');
+            const statusReason = document.getElementById('status-reason');
+            
+            if (status === 'formation' || status === 'conge' || status === 'maladie') {
+                statusDates.style.display = 'block';
+                statusReason.style.display = 'block';
+            } else {
+                statusDates.style.display = 'none';
+                statusReason.style.display = 'none';
+            }
+        }
+
+        // Fonction pour générer les alertes
+        function generateAlerts() {
+            const container = document.getElementById('notifications-container');
+            container.innerHTML = '';
+            
+            const today = new Date();
+            const oneWeekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+            
+            teamData.members.forEach(member => {
+                // Alertes ODM pour Altrad autres
+                if (member.type === 'altrad-autres' && member.odmRequired && member.odmDateFin) {
+                    const odmEndDate = new Date(member.odmDateFin);
+                    const daysUntilEnd = Math.ceil((odmEndDate - today) / (1000 * 60 * 60 * 24));
+                    
+                    if (daysUntilEnd <= 7 && daysUntilEnd >= 0) {
+                        const alert = document.createElement('div');
+                        alert.className = 'notification-item notification-warning';
+                        alert.innerHTML = `
+                            <div class="notification-icon">⚠️</div>
+                            <div>
+                                <strong>${member.name}</strong> - Préparer son ODM
+                                <br><small>ODM se termine le ${odmEndDate.toLocaleDateString('fr-FR')} (dans ${daysUntilEnd} jour${daysUntilEnd > 1 ? 's' : ''})</small>
+                            </div>
+                        `;
+                        container.appendChild(alert);
+                    }
+                }
+                
+                // Alertes formation
+                if (member.status === 'formation' && member.dateDebut && member.dateFin) {
+                    const formationStart = new Date(member.dateDebut);
+                    const formationEnd = new Date(member.dateFin);
+                    
+                    const alert = document.createElement('div');
+                    alert.className = 'notification-item notification-info';
+                    alert.innerHTML = `
+                        <div class="notification-icon">🎓</div>
+                        <div>
+                            <strong>${member.name}</strong> - En formation
+                            <br><small>Du ${formationStart.toLocaleDateString('fr-FR')} au ${formationEnd.toLocaleDateString('fr-FR')}</small>
+                        </div>
+                    `;
+                    container.appendChild(alert);
+                }
+                
+                // Alertes congé
+                if (member.status === 'conge' && member.dateDebut && member.dateFin) {
+                    const congeStart = new Date(member.dateDebut);
+                    const congeEnd = new Date(member.dateFin);
+                    
+                    const alert = document.createElement('div');
+                    alert.className = 'notification-item notification-info';
+                    alert.innerHTML = `
+                        <div class="notification-icon">🏖️</div>
+                        <div>
+                            <strong>${member.name}</strong> - En congé
+                            <br><small>Du ${congeStart.toLocaleDateString('fr-FR')} au ${congeEnd.toLocaleDateString('fr-FR')}</small>
+                        </div>
+                    `;
+                    container.appendChild(alert);
+                }
+                
+                // Alertes maladie
+                if (member.status === 'maladie' && member.dateDebut && member.dateFin) {
+                    const maladieStart = new Date(member.dateDebut);
+                    const maladieEnd = new Date(member.dateFin);
+                    
+                    const alert = document.createElement('div');
+                    alert.className = 'notification-item notification-danger';
+                    alert.innerHTML = `
+                        <div class="notification-icon">🏥</div>
+                        <div>
+                            <strong>${member.name}</strong> - Arrêt maladie
+                            <br><small>Du ${maladieStart.toLocaleDateString('fr-FR')} au ${maladieEnd.toLocaleDateString('fr-FR')}</small>
+                        </div>
+                    `;
+                    container.appendChild(alert);
+                }
+                
+                // Alertes indisponible
+                if (member.status === 'unavailable') {
+                    const alert = document.createElement('div');
+                    alert.className = 'notification-item notification-warning';
+                    alert.innerHTML = `
+                        <div class="notification-icon">⛔</div>
+                        <div>
+                            <strong>${member.name}</strong> - Indisponible
+                            <br><small>${member.reason || 'Raison non précisée'}</small>
+                        </div>
+                    `;
+                    container.appendChild(alert);
+                }
+            });
+            
+            if (container.children.length === 0) {
+                container.innerHTML = '<div class="notification-item"><div class="notification-icon">✅</div><div>Aucune alerte pour le moment</div></div>';
+            }
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+            });
+        });
+
+        function renderTeamMembers(members = teamData.members) {
+            const grid = document.getElementById('team-grid');
+            grid.innerHTML = '';
+            // Inclure tous les membres, y compris les sous-traitants
+            const employees = members;
+
+            employees.forEach(member => {
+                const card = document.createElement('div');
+                // Ajouter les classes selon le type d'employé et le statut
+                const cardClasses = `member-card ${member.status} ${member.type}`;
+                card.className = cardClasses;
+                const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+                let statusClass = 'status-available';
+                let statusText = 'Disponible';
+
+                switch(member.status) {
+                    case 'unavailable':
+                        statusClass = 'status-unavailable';
+                        statusText = member.reason || 'Indisponible';
+                        break;
+                    case 'formation':
+                        statusClass = 'status-formation';
+                        statusText = `Formation: ${member.reason || ''}`;
+                        break;
+                    case 'conge':
+                        statusClass = 'status-conge';
+                        const startDateCong = member.dateDebut ? new Date(member.dateDebut).toLocaleDateString('fr-FR') : 'N/A';
+                        const endDateCong = member.dateFin ? new Date(member.dateFin).toLocaleDateString('fr-FR') : 'N/A';
+                        statusText = `Congé: du ${startDateCong} au ${endDateCong}`;
+                        break;
+                    case 'maladie':
+                        statusClass = 'status-maladie';
+                        const startDateMal = member.dateDebut ? new Date(member.dateDebut).toLocaleDateString('fr-FR') : 'N/A';
+                        const endDateMal = member.dateFin ? new Date(member.dateFin).toLocaleDateString('fr-FR') : 'N/A';
+                        statusText = `Arrêt: du ${startDateMal} au ${endDateMal}`;
+                        break;
+                }
+
+                const typeLabels = { 'employee': 'Employé', 'interimaire': 'Intérimaire', 'altrad-autres': 'Altrad autres', 'contractor': 'Sous-traitant' };
+
+                let odmSection = '';
+                if (member.type === 'altrad-autres' && member.odmRequired) {
+                    const odmStart = member.odmDateDebut ? new Date(member.odmDateDebut).toLocaleDateString('fr-FR') : 'N/A';
+                    const odmEnd = member.odmDateFin ? new Date(member.odmDateFin).toLocaleDateString('fr-FR') : 'N/A';
+                    odmSection = `
+                        <div class="odm-section">
+                            <div class="odm-title">📋 ODM actif</div>
+                            <div style="font-size: 0.8rem;">
+                                <div><strong>Période:</strong> du ${odmStart} au ${odmEnd}</div>
+                                <div><strong>Chantier:</strong> ${member.odmChantier || 'Non défini'}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Déterminer la classe de l'avatar selon le type
+                const avatarClass = member.type === 'contractor' ? 'member-avatar contractor-avatar' : 'member-avatar';
+                
+                card.innerHTML = `
+                    <div class="member-header">
+                        <div class="${avatarClass}">${initials}</div>
+                        <div class="member-info">
+                            <h3>${member.name}</h3>
+                            <div class="member-role">${member.role}</div>
+                            <div class="member-type">${typeLabels[member.type] || member.type}</div>
+                            <div class="member-status ${statusClass}">${statusText}</div>
+                        </div>
+                    </div>
+                    ${odmSection}
+                    <div class="member-details">
+
+                        <div class="detail-item" style="grid-column: span 2;">
+                            <div class="detail-label" style="font-size: 0.7rem; margin-bottom: 0.2rem;">Affectation actuelle</div>
+                            <div class="detail-value" style="font-size: 0.9rem;">${member.chantierActuel}</div>
+                        </div>
+                    </div>
+                    <div class="member-skills">
+                        <div class="skills-title">Compétences</div>
+                        <div class="skills-list">
+                            ${member.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="member-actions">
+                        <button class="btn btn-small btn-primary" onclick="editMember(${member.id})">✏️ Modifier</button>
+                        <button class="btn btn-small btn-success" onclick="contactMember(${member.id})">📞 Contact</button>
+                        ${member.status !== 'available' ? `<button class="btn btn-small btn-info" onclick="viewDetails(${member.id})">👁️ Détails</button>` : ''}
+                        <button class="btn btn-small btn-danger" onclick="deleteMember(${member.id})">🗑️ Supprimer</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            updateStats();
+        }
+
+        function renderContractors() {
+            const grid = document.getElementById('contractors-grid');
+            grid.innerHTML = '';
+            teamData.contractors.forEach(contractor => {
+                const card = document.createElement('div');
+                card.className = `member-card contractor ${contractor.status || 'available'}`;
+                const initials = contractor.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+
+                card.innerHTML = `
+                    <div class="member-header">
+                        <div class="member-avatar contractor-avatar">${initials}</div>
+                        <div class="member-info">
+                            <h3>${contractor.name}</h3>
+                            <div class="member-role">${contractor.role}</div>
+                            <div class="member-type">Sous-traitant</div>
+                            <div class="member-status status-contractor">${contractor.disponible ? 'Disponible' : 'Occupé'}</div>
+                        </div>
+                    </div>
+                    <div class="member-details">
+                        <div class="detail-item" style="grid-column: span 2;">
+                            <div class="detail-value" style="font-size: 0.9rem;">${contractor.specialite}</div>
+                            <div class="detail-label">Spécialité</div>
+                        </div>
+                    </div>
+                    <div class="member-skills">
+                        <div class="skills-title">Compétences</div>
+                        <div class="skills-list">
+                            ${contractor.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="member-actions">
+                        <button class="btn btn-small btn-primary" onclick="editContractor(${contractor.id})">✏️ Modifier</button>
+                        <button class="btn btn-small btn-success" onclick="contactContractor(${contractor.id})">📞 Contact</button>
+                        <button class="btn btn-small btn-danger" onclick="deleteContractor(${contractor.id})">🗑️ Supprimer</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateStats() {
+            const employees = teamData.members.filter(m => m.type !== 'contractor');
+            const available = employees.filter(m => m.status === 'available').length;
+            const formation = employees.filter(m => m.status === 'formation').length;
+            const contractors = teamData.contractors.length;
+
+            document.getElementById('total-members').textContent = employees.length;
+            document.getElementById('available-members').textContent = available;
+            document.getElementById('formation-members').textContent = formation;
+            document.getElementById('contractors-count').textContent = contractors;
+        }
+
+        function openAddMemberModal() {
+            isEditMode = false;
+            document.getElementById('modal-title').textContent = '➕ Nouveau Membre';
+            document.getElementById('submit-btn').textContent = 'Ajouter';
+            document.getElementById('edit-member-id').value = '';
+            document.getElementById('memberModal').style.display = 'flex';
+            document.getElementById('memberForm').reset();
+            toggleODMSection();
+            toggleStatusFields();
+        }
+
+        function closeMemberModal() {
+            document.getElementById('memberModal').style.display = 'none';
+            isEditMode = false;
+        }
+
+        function openAddContractorModal() {
+            // Implémentation pour ajouter un sous-traitant
+            alert('Fonctionnalité d\'ajout de sous-traitant à implémenter');
+        }
+
+        // Fonction pour gérer le champ "Autres"
+        function toggleAutresField() {
+            const autresCheckbox = document.getElementById('autres-checkbox');
+            const autresText = document.getElementById('autres-text');
+            
+            if (autresCheckbox.checked) {
+                autresText.style.display = 'block';
+            } else {
+                autresText.style.display = 'none';
+                autresText.value = '';
+            }
+        }
+
+        // Fonction pour récupérer les compétences sélectionnées
+        function getSelectedSkills() {
+            const checkboxes = document.querySelectorAll('#skills-container input[type="checkbox"]:checked');
+            const skills = [];
+            
+            checkboxes.forEach(checkbox => {
+                if (checkbox.value === 'autres') {
+                    const autresText = document.getElementById('autres-text').value.trim();
+                    if (autresText) {
+                        skills.push(autresText);
+                    }
+                } else {
+                    skills.push(checkbox.value);
+                }
+            });
+            
+            return skills;
+        }
+
+        // Fonction pour définir les compétences sélectionnées
+        function setSelectedSkills(skills) {
+            // Décocher toutes les cases
+            const checkboxes = document.querySelectorAll('#skills-container input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+            
+            // Réinitialiser le champ "autres"
+            document.getElementById('autres-text').value = '';
+            document.getElementById('autres-text').style.display = 'none';
+            
+            // Cocher les compétences correspondantes
+            skills.forEach(skill => {
+                const checkbox = document.querySelector(`#skills-container input[value="${skill}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                } else {
+                    // Si la compétence n'existe pas dans la liste, l'ajouter dans "autres"
+                    document.getElementById('autres-checkbox').checked = true;
+                    document.getElementById('autres-text').style.display = 'block';
+                    const currentAutres = document.getElementById('autres-text').value;
+                    document.getElementById('autres-text').value = currentAutres ? `${currentAutres}, ${skill}` : skill;
+                }
+            });
+        }
+
+        // Fonction editMember corrigée
+        function editMember(id) {
+            const member = teamData.members.find(m => m.id === id);
+            if (!member) return;
+
+            isEditMode = true;
+            document.getElementById('modal-title').textContent = '✏️ Modifier Membre';
+            document.getElementById('submit-btn').textContent = 'Modifier';
+            document.getElementById('edit-member-id').value = id;
+
+            // Remplir le formulaire avec les données du membre
+            document.getElementById('member-name').value = member.name;
+            document.getElementById('member-type').value = member.type;
+            document.getElementById('member-role').value = member.role;
+            document.getElementById('member-status').value = member.status;
+            document.getElementById('member-phone').value = member.phone || '';
+            document.getElementById('member-email').value = member.email || '';
+            setSelectedSkills(member.skills || []);
+            document.getElementById('chantier-actuel').value = member.chantierActuel || '';
+
+            // Gestion des champs de statut
+            if (['formation', 'conge', 'maladie'].includes(member.status)) {
+                document.getElementById('date-debut').value = member.dateDebut || '';
+                document.getElementById('date-fin').value = member.dateFin || '';
+                document.getElementById('member-reason').value = member.reason || '';
+            }
+
+            // Gestion ODM pour Altrad autres
+            if (member.type === 'altrad-autres' && member.odmRequired) {
+                document.getElementById('odm-required').checked = true;
+                document.getElementById('odm-date-debut').value = member.odmDateDebut || '';
+                document.getElementById('odm-date-fin').value = member.odmDateFin || '';
+                document.getElementById('odm-chantier-manuel').value = member.odmChantier || '';
+            }
+
+            toggleODMSection();
+            toggleODMFields();
+            toggleStatusFields();
+            
+            document.getElementById('memberModal').style.display = 'flex';
+        }
+
+        document.getElementById('memberForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const memberData = {
+                name: document.getElementById('member-name').value,
+                type: document.getElementById('member-type').value,
+                role: document.getElementById('member-role').value,
+                status: document.getElementById('member-status').value,
+                phone: document.getElementById('member-phone').value,
+                email: document.getElementById('member-email').value,
+                skills: getSelectedSkills(),
+                chantierActuel: document.getElementById('chantier-actuel').value || 'À affecter',
+                heuresSemaine: 0
+            };
+
+            // Gestion des dates pour statuts spéciaux
+            if (['formation', 'conge', 'maladie'].includes(memberData.status)) {
+                memberData.dateDebut = document.getElementById('date-debut').value;
+                memberData.dateFin = document.getElementById('date-fin').value;
+                memberData.reason = document.getElementById('member-reason').value;
+            }
+
+            // Gestion ODM pour Altrad autres
+            if (memberData.type === 'altrad-autres' && document.getElementById('odm-required').checked) {
+                memberData.odmRequired = true;
+                memberData.odmDateDebut = document.getElementById('odm-date-debut').value;
+                memberData.odmDateFin = document.getElementById('odm-date-fin').value;
+                memberData.odmChantier = document.getElementById('odm-chantier-manuel').value;
+                
+                // Affecter automatiquement au chantier ODM si défini
+                if (memberData.odmChantier) {
+                    memberData.chantierActuel = memberData.odmChantier;
+                }
+            }
+
+            if (isEditMode) {
+                // Mode modification
+                const memberId = parseInt(document.getElementById('edit-member-id').value);
+                const memberIndex = teamData.members.findIndex(m => m.id === memberId);
+                if (memberIndex !== -1) {
+                    // Conserver l'ID et l'expérience existants
+                    memberData.id = memberId;
+                    memberData.experience = teamData.members[memberIndex].experience;
+                    teamData.members[memberIndex] = memberData;
+                }
+            } else {
+                // Mode ajout
+                memberData.id = Date.now();
+                memberData.experience = Math.floor(Math.random() * 15) + 1;
+                teamData.members.push(memberData);
+            }
+
+            saveDataToStorage();
+            renderTeamMembers();
+            generateAlerts();
+            closeMemberModal();
+            
+            // Notifier immédiatement les autres modules
+            if (window.syncTeamData) {
+                window.syncTeamData(teamData);
+            }
+        });
+
+        // Fonctions utilitaires
+        function contactMember(id) {
+            const member = teamData.members.find(m => m.id === id);
+            if (member) {
+                alert(`Contact: ${member.name}\nTél: ${member.phone}\nEmail: ${member.email}`);
+            }
+        }
+
+        function viewDetails(id) {
+            const member = teamData.members.find(m => m.id === id);
+            if (member) {
+                let details = `Détails de ${member.name}:\n`;
+                details += `Statut: ${member.status}\n`;
+                if (member.dateDebut && member.dateFin) {
+                    details += `Période: du ${new Date(member.dateDebut).toLocaleDateString('fr-FR')} au ${new Date(member.dateFin).toLocaleDateString('fr-FR')}\n`;
+                }
+                if (member.reason) {
+                    details += `Raison: ${member.reason}\n`;
+                }
+                alert(details);
+            }
+        }
+
+        function deleteMember(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) {
+                teamData.members = teamData.members.filter(m => m.id !== id);
+                saveDataToStorage();
+                renderTeamMembers();
+                generateAlerts();
+                
+                // Notifier immédiatement les autres modules
+                if (window.syncTeamData) {
+                    window.syncTeamData(teamData);
+                }
+            }
+        }
+
+        function contactContractor(id) {
+            const contractor = teamData.contractors.find(c => c.id === id);
+            if (contractor) {
+                alert(`Contact: ${contractor.name}\nTél: ${contractor.phone}\nEmail: ${contractor.email}`);
+            }
+        }
+
+        function editContractor(id) {
+            alert(`Édition du sous-traitant ${id} - Fonctionnalité à implémenter`);
+        }
+
+        function deleteContractor(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce sous-traitant ?')) {
+                teamData.contractors = teamData.contractors.filter(c => c.id !== id);
+                saveDataToStorage();
+                renderContractors();
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('search-members').value = '';
+            document.getElementById('filter-status').value = '';
+            document.getElementById('filter-skill').value = '';
+            renderTeamMembers();
+        }
+
+        // Filtres
+        document.getElementById('search-members').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filteredMembers = teamData.members.filter(member => 
+                member.name.toLowerCase().includes(searchTerm) ||
+                member.role.toLowerCase().includes(searchTerm) ||
+                member.skills.some(skill => skill.toLowerCase().includes(searchTerm))
+            );
+            renderTeamMembers(filteredMembers);
+        });
+
+        document.getElementById('filter-status').addEventListener('change', function() {
+            const status = this.value;
+            if (status) {
+                const filteredMembers = teamData.members.filter(member => member.status === status);
+                renderTeamMembers(filteredMembers);
+            } else {
+                renderTeamMembers();
+            }
+        });
+
+        document.getElementById('filter-skill').addEventListener('change', function() {
+            const skill = this.value;
+            if (skill) {
+                const filteredMembers = teamData.members.filter(member => 
+                    member.skills.includes(skill)
+                );
+                renderTeamMembers(filteredMembers);
+            } else {
+                renderTeamMembers();
+            }
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTeamMembers();
+            renderContractors();
+            generateAlerts();
+            
+            // S'abonner au système de synchronisation centralisé
+            if (window.dataSyncManager) {
+                // S'abonner aux mises à jour d'équipe
+                window.dataSyncManager.subscribe('team', function(data) {
+                    console.log('Équipe: Données mises à jour via synchronisation centralisée');
+                    teamData = data;
+                    renderTeamMembers();
+                    renderContractors();
+                    generateAlerts();
+                }, 'equipe');
+                
+                // S'abonner aux mises à jour d'affectations
+                window.dataSyncManager.subscribe('affectations', function(data) {
+                    console.log('Équipe: Affectations mises à jour via synchronisation centralisée');
+                    renderTeamMembers();
+                    generateAlerts();
+                }, 'equipe');
+            }
+            
+            // Écouter les mises à jour des affectations (compatibilité)
+            window.addEventListener('affectationsUpdated', function(event) {
+                console.log('Équipe: Affectations mises à jour', event.detail);
+                renderTeamMembers();
+                generateAlerts();
+            });
+            
+            // Écouter les changements de localStorage pour les affectations (compatibilité)
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'planning_affectations') {
+                    console.log('Équipe: Données d\'affectations mises à jour via localStorage');
+                    renderTeamMembers();
+                    generateAlerts();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

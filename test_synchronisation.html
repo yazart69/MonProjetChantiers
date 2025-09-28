@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Synchronisation - Gestionnaire Chantier</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #dc2626;
+        }
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+        }
+        .test-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin: 0.5rem;
+            font-weight: 600;
+        }
+        .btn:hover {
+            background: #b91c1c;
+        }
+        .btn-success {
+            background: #16a34a;
+        }
+        .btn-success:hover {
+            background: #15803d;
+        }
+        .btn-warning {
+            background: #d97706;
+        }
+        .btn-warning:hover {
+            background: #b45309;
+        }
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            margin: 0.5rem 0;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status.error {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .data-display {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .stat-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #dc2626;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Test de Synchronisation</h1>
+            <p>Vérification du système de synchronisation centralisé</p>
+        </div>
+
+        <!-- Statut du système -->
+        <div class="test-section">
+            <h2 class="test-title">📊 Statut du Système</h2>
+            <div id="system-status"></div>
+            <button class="btn" onclick="checkSystemStatus()">Vérifier le Statut</button>
+        </div>
+
+        <!-- Statistiques globales -->
+        <div class="test-section">
+            <h2 class="test-title">📈 Statistiques Globales</h2>
+            <div id="global-stats" class="stats-grid"></div>
+            <button class="btn" onclick="loadGlobalStats()">Charger les Statistiques</button>
+        </div>
+
+        <!-- Test d'ajout de membre -->
+        <div class="test-section">
+            <h2 class="test-title">👥 Test d'Ajout de Membre</h2>
+            <div>
+                <input type="text" id="new-member-name" placeholder="Nom du nouveau membre" style="padding: 0.5rem; margin: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem;">
+                <input type="text" id="new-member-role" placeholder="Rôle" style="padding: 0.5rem; margin: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem;">
+                <button class="btn btn-success" onclick="addTestMember()">Ajouter Membre Test</button>
+            </div>
+            <div id="add-member-result"></div>
+        </div>
+
+        <!-- Test de synchronisation entre modules -->
+        <div class="test-section">
+            <h2 class="test-title">🔄 Test de Synchronisation</h2>
+            <div>
+                <button class="btn" onclick="testSynchronization()">Tester la Synchronisation</button>
+                <button class="btn btn-warning" onclick="simulateDataChange()">Simuler Changement de Données</button>
+            </div>
+            <div id="sync-test-result"></div>
+        </div>
+
+        <!-- Affichage des données -->
+        <div class="test-section">
+            <h2 class="test-title">📋 Données Actuelles</h2>
+            <div>
+                <button class="btn" onclick="showTeamData()">Données Équipe</button>
+                <button class="btn" onclick="showPlanningData()">Données Planning</button>
+                <button class="btn" onclick="showAllData()">Toutes les Données</button>
+            </div>
+            <div id="data-display" class="data-display"></div>
+        </div>
+
+        <!-- Actions de maintenance -->
+        <div class="test-section">
+            <h2 class="test-title">🔧 Actions de Maintenance</h2>
+            <div>
+                <button class="btn btn-success" onclick="exportAllData()">Exporter Toutes les Données</button>
+                <button class="btn btn-warning" onclick="resetAllData()">Réinitialiser Toutes les Données</button>
+                <button class="btn" onclick="clearLogs()">Effacer les Logs</button>
+            </div>
+            <div id="maintenance-result"></div>
+        </div>
+
+        <!-- Logs -->
+        <div class="test-section">
+            <h2 class="test-title">📝 Logs de Synchronisation</h2>
+            <div id="logs" class="data-display"></div>
+        </div>
+    </div>
+
+    <script src="data_sync.js"></script>
+    <script>
+        let testMemberCounter = 1;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            loadGlobalStats();
+            
+            // S'abonner aux mises à jour pour les logs
+            if (window.dataSyncManager) {
+                window.dataSyncManager.subscribe('team', function(data) {
+                    addLog('🔄 Données d\'équipe mises à jour', 'info');
+                }, 'test');
+                
+                window.dataSyncManager.subscribe('planning', function(data) {
+                    addLog('🔄 Données de planning mises à jour', 'info');
+                }, 'test');
+            }
+        });
+
+        function checkSystemStatus() {
+            const statusDiv = document.getElementById('system-status');
+            
+            if (window.dataSyncManager) {
+                statusDiv.innerHTML = '<div class="status success">✅ Système de synchronisation actif et fonctionnel</div>';
+                addLog('✅ Vérification du statut du système - OK', 'success');
+            } else {
+                statusDiv.innerHTML = '<div class="status error">❌ Système de synchronisation non disponible</div>';
+                addLog('❌ Vérification du statut du système - ERREUR', 'error');
+            }
+        }
+
+        function loadGlobalStats() {
+            if (window.getGlobalStats) {
+                const stats = window.getGlobalStats();
+                const statsDiv = document.getElementById('global-stats');
+                
+                if (stats) {
+                    statsDiv.innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.totalPersonnel}</div>
+                            <div class="stat-label">Personnel Total</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.availablePersonnel}</div>
+                            <div class="stat-label">Disponibles</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.totalChantiers}</div>
+                            <div class="stat-label">Chantiers Total</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.activeChantiers}</div>
+                            <div class="stat-label">Chantiers Actifs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.totalHours}h</div>
+                            <div class="stat-label">Heures Total</div>
+                        </div>
+                    `;
+                    addLog('📊 Statistiques globales chargées', 'success');
+                } else {
+                    statsDiv.innerHTML = '<div class="status error">Aucune donnée disponible</div>';
+                    addLog('❌ Impossible de charger les statistiques', 'error');
+                }
+            }
+        }
+
+        function addTestMember() {
+            const name = document.getElementById('new-member-name').value || `Membre Test ${testMemberCounter}`;
+            const role = document.getElementById('new-member-role').value || 'Opérateur Test';
+            const resultDiv = document.getElementById('add-member-result');
+            
+            if (window.dataSyncManager) {
+                const teamData = window.dataSyncManager.loadData('team');
+                if (teamData) {
+                    const newMember = {
+                        id: Date.now(),
+                        name: name,
+                        role: role,
+                        status: 'available',
+                        type: 'employee',
+                        phone: '06.XX.XX.XX.XX',
+                        email: `${name.toLowerCase().replace(/\s+/g, '.')}@altrad.fr`,
+                        skills: ['test'],
+                        experience: 1,
+                        chantierActuel: 'Test',
+                        heuresSemaine: 35
+                    };
+                    
+                    teamData.members.push(newMember);
+                    window.dataSyncManager.saveData('team', teamData);
+                    
+                    resultDiv.innerHTML = `<div class="status success">✅ Membre "${name}" ajouté avec succès</div>`;
+                    addLog(`✅ Nouveau membre ajouté: ${name}`, 'success');
+                    
+                    // Vider les champs
+                    document.getElementById('new-member-name').value = '';
+                    document.getElementById('new-member-role').value = '';
+                    testMemberCounter++;
+                    
+                    // Recharger les statistiques
+                    setTimeout(loadGlobalStats, 500);
+                }
+            } else {
+                resultDiv.innerHTML = '<div class="status error">❌ Système de synchronisation non disponible</div>';
+            }
+        }
+
+        function testSynchronization() {
+            const resultDiv = document.getElementById('sync-test-result');
+            
+            if (window.dataSyncManager) {
+                // Tester la sauvegarde et le chargement
+                const testData = { test: 'synchronisation', timestamp: new Date().toISOString() };
+                window.dataSyncManager.saveData('team', testData);
+                
+                const loadedData = window.dataSyncManager.loadData('team');
+                
+                if (loadedData && loadedData.test === 'synchronisation') {
+                    resultDiv.innerHTML = '<div class="status success">✅ Test de synchronisation réussi</div>';
+                    addLog('✅ Test de synchronisation - SUCCÈS', 'success');
+                } else {
+                    resultDiv.innerHTML = '<div class="status error">❌ Test de synchronisation échoué</div>';
+                    addLog('❌ Test de synchronisation - ÉCHEC', 'error');
+                }
+            } else {
+                resultDiv.innerHTML = '<div class="status error">❌ Système de synchronisation non disponible</div>';
+            }
+        }
+
+        function simulateDataChange() {
+            if (window.dataSyncManager) {
+                const teamData = window.dataSyncManager.loadData('team');
+                if (teamData && teamData.members && teamData.members.length > 0) {
+                    // Modifier le statut du premier membre
+                    const firstMember = teamData.members[0];
+                    firstMember.status = firstMember.status === 'available' ? 'formation' : 'available';
+                    firstMember.reason = firstMember.status === 'formation' ? 'Formation test' : '';
+                    
+                    window.dataSyncManager.saveData('team', teamData);
+                    addLog(`🔄 Statut de ${firstMember.name} modifié vers: ${firstMember.status}`, 'info');
+                }
+            }
+        }
+
+        function showTeamData() {
+            if (window.dataSyncManager) {
+                const data = window.dataSyncManager.loadData('team');
+                document.getElementById('data-display').textContent = JSON.stringify(data, null, 2);
+                addLog('📋 Données d\'équipe affichées', 'info');
+            }
+        }
+
+        function showPlanningData() {
+            if (window.dataSyncManager) {
+                const data = window.dataSyncManager.loadData('planning');
+                document.getElementById('data-display').textContent = JSON.stringify(data, null, 2);
+                addLog('📋 Données de planning affichées', 'info');
+            }
+        }
+
+        function showAllData() {
+            if (window.exportAllData) {
+                const data = window.exportAllData();
+                document.getElementById('data-display').textContent = JSON.stringify(data, null, 2);
+                addLog('📋 Toutes les données affichées', 'info');
+            }
+        }
+
+        function exportAllData() {
+            if (window.exportAllData) {
+                const data = window.exportAllData();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `donnees_completes_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                document.getElementById('maintenance-result').innerHTML = '<div class="status success">✅ Données exportées avec succès</div>';
+                addLog('✅ Export de toutes les données', 'success');
+            }
+        }
+
+        function resetAllData() {
+            if (confirm('Êtes-vous sûr de vouloir réinitialiser toutes les données ? Cette action est irréversible.')) {
+                if (window.resetAllData) {
+                    window.resetAllData();
+                    document.getElementById('maintenance-result').innerHTML = '<div class="status success">✅ Toutes les données ont été réinitialisées</div>';
+                    addLog('🔄 Toutes les données réinitialisées', 'warning');
+                    setTimeout(() => {
+                        loadGlobalStats();
+                        checkSystemStatus();
+                    }, 1000);
+                }
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            addLog('📝 Logs effacés', 'info');
+        }
+
+        function addLog(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `status ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointage Hebdomadaire - Équipe 41</title>
+    <style>
+        :root {
+            --primary-red: #dc2626; --primary-orange: #ea580c; --primary-blue: #2563eb;
+            --success: #16a34a; --warning: #d97706; --danger: #dc2626; --info: #0ea5e9;
+            --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb; --gray-300: #d1d5db;
+            --gray-700: #374151; --gray-900: #111827; --white: #ffffff;
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1); --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --sidebar-width: 280px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.4; }
+        .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh; background: #000000; color: white; z-index: 1000; overflow-y: auto; transition: transform 0.3s ease-in-out; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar-header { padding: 2rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); text-align: center; }
+        .sidebar-logo { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .sidebar-subtitle { font-size: 0.9rem; opacity: 0.8; }
+        .sidebar-nav { padding: 1rem 0; }
+        .nav-section { margin-bottom: 2rem; }
+        .nav-section-title { padding: 0 1.5rem 0.5rem; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; opacity: 0.7; }
+        .nav-item { display: block; padding: 0.75rem 1.5rem; color: white; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; position: relative; }
+        .nav-item:hover, .nav-item.active { background: rgba(255, 255, 255, 0.1); border-left-color: #dc2626; transform: translateX(5px); }
+        .nav-item .icon { display: inline-block; width: 1.5rem; margin-right: 0.75rem; text-align: center; }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: var(--gray-50); transition: margin-left 0.3s ease-in-out; }
+        .header { background: white; padding: 1.5rem 2rem; border-bottom: 1px solid var(--gray-200); box-shadow: var(--shadow-md); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        .header-title { font-size: 2rem; font-weight: bold; color: var(--primary-red); }
+        .header-actions { display: flex; gap: 1rem; align-items: center; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-primary { background: var(--primary-red); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-outline { background: transparent; color: var(--primary-red); border: 2px solid var(--primary-red); }
+        .btn-info { background: var(--info); color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .content { padding: 2rem; }
+        .week-selector { background: white; border-radius: 1rem; padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-md); display: flex; justify-content: space-between; align-items: center; }
+        .week-nav { display: flex; align-items: center; gap: 0.5rem; }
+        .week-nav button { padding: 0.5rem; border: none; background: var(--gray-100); border-radius: 0.25rem; cursor: pointer; }
+        .planning-container { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow-md); overflow-x: auto; margin-bottom: 2rem; }
+        .planning-table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+        .planning-table th, .planning-table td { border: 1px solid var(--gray-200); padding: 0.5rem; text-align: center; vertical-align: top; }
+        .planning-table th { background: linear-gradient(135deg, var(--primary-red), var(--primary-orange)); color: white; font-weight: 600; position: sticky; top: 0; z-index: 10; }
+        .planning-table .member-cell { background: var(--gray-50); font-weight: 600; text-align: left; min-width: 150px; position: sticky; left: 0; z-index: 5; }
+        .day-cell { min-width: 220px; padding: 0.25rem; }
+        .chantier-select, .status-select, .hours-input, .activity-input, .route-input, .comments-textarea { width: 100%; padding: 0.25rem; border: 1px solid var(--gray-300); border-radius: 0.25rem; font-size: 0.8rem; margin-bottom: 0.25rem; }
+        .hours-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; margin-bottom: 0.25rem; }
+        .activity-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.25rem; }
+        .route-input { border-color: var(--warning); background: #fef3c7; }
+        .total-cell { background: var(--gray-100); font-weight: 700; color: var(--primary-red); font-size: 0.9rem; }
+        .comments-textarea { height: 60px; resize: vertical; }
+        .static-value { display: none; }
+        .member-management, .chantier-management, .summary-section, .import-export-section { background: white; border-radius: 1rem; padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-md); }
+        .add-member-form, .add-chantier-form { display: grid; grid-template-columns: 2fr 1fr auto; gap: 0.5rem; align-items: end; margin-bottom: 1rem; }
+        .add-member-form input, .add-chantier-form input { padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 0.25rem; }
+        .member-grid, .chantier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .member-item, .chantier-item { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 0.5rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .delete-member, .delete-chantier { background: var(--danger); color: white; border: none; border-radius: 0.25rem; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .summary-card { background: var(--gray-50); border-radius: 0.5rem; padding: 1rem; text-align: center; }
+        .summary-value { font-size: 1.5rem; font-weight: 700; color: var(--primary-red); margin-bottom: 0.25rem; }
+        .summary-label { font-size: 0.9rem; color: var(--gray-700); }
+        .chantier-card { background: linear-gradient(135deg, #e3f2fd, #bbdefb); border-left: 4px solid var(--primary-blue); }
+        .chantier-card .summary-value { color: var(--primary-blue); }
+        .export-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .file-input { padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 0.25rem; width: 100%; }
+        .hidden { display: none; }
+        
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🏗️ Gestionnaire Chantier</div>
+            <div class="sidebar-subtitle">Équipe 41 - Chasse sur Rhône</div>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="index.html" class="nav-item"><span class="icon">🏠</span> Tableau de Bord</a>
+                <a href="planning.html" class="nav-item"><span class="icon">📅</span> Planning</a>
+                <a href="pointage.html" class="nav-item active"><span class="icon">⏰</span> Pointage</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Gestion</div>
+                <a href="equipe.html" class="nav-item"><span class="icon">👥</span> Équipe</a>
+                <a href="materiaux.html" class="nav-item"><span class="icon">🔧</span> Travaux & Matériaux</a>
+                <a href="reunion.html" class="nav-item"><span class="icon">🗓️</span> Réunions</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="header-top">
+                <h1 class="header-title">⏰ Pointage Hebdomadaire</h1>
+                <div class="header-actions">
+                    <button class="btn btn-outline" onclick="exportToHTML()">📄 Exporter HTML</button>
+                    <button class="btn btn-info" onclick="exportToJSON()">💾 Exporter Données</button>
+                    <button class="btn btn-success" onclick="savePlanning()">💾 Sauvegarder</button>
+                    <button class="btn btn-primary" onclick="printWithData()">🖨️ Imprimer</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="week-selector">
+                <div class="week-info">
+                    <h3 id="current-week"></h3>
+                </div>
+                <div class="week-nav">
+                    <button onclick="previousWeek()">◀</button>
+                    <button onclick="currentWeek()">Aujourd'hui</button>
+                    <button onclick="nextWeek()">▶</button>
+                </div>
+            </div>
+
+            <div class="import-export-section">
+                <h3>📁 Import/Export des Données</h3>
+                <div class="export-actions">
+                    <div>
+                        <label for="file-input">Importer des données :</label>
+                        <input type="file" id="file-input" class="file-input" accept=".json" onchange="importData(event)">
+                    </div>
+                    <div>
+                        <button class="btn btn-outline" onclick="exportToEmail()">📧 Préparer pour Email</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-info" onclick="resetAllData()">🔄 Réinitialiser</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="planning-container">
+                <table class="planning-table" id="planning-table">
+                    <thead>
+                        <tr>
+                            <th>Membre</th>
+                            <th>Lundi</th><th>Mardi</th><th>Mercredi</th><th>Jeudi</th><th>Vendredi</th>
+                            <th>Total Semaine</th><th>Commentaires</th>
+                        </tr>
+                    </thead>
+                    <tbody id="planning-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="summary-section">
+                <h3>📊 Résumé de la Semaine</h3>
+                <div class="summary-grid" id="summary-grid"></div>
+            </div>
+
+            <div class="member-management">
+                <h3>👥 Gestion de l'Équipe</h3>
+                <div class="add-member-form">
+                    <input type="text" id="new-member-name" placeholder="Nom du membre">
+                    <input type="text" id="new-member-role" placeholder="Rôle">
+                    <button class="btn btn-success" onclick="addMember()">➕ Ajouter</button>
+                </div>
+                <div class="member-grid" id="member-list"></div>
+            </div>
+
+            <div class="chantier-management">
+                <h3>🏗️ Gestion des Chantiers</h3>
+                <div class="add-chantier-form">
+                    <input type="text" id="new-chantier-name" placeholder="Nom du chantier">
+                    <input type="text" id="new-chantier-code" placeholder="Code">
+                    <button class="btn btn-success" onclick="addChantier()">➕ Ajouter</button>
+                </div>
+                <div class="chantier-grid" id="chantier-list"></div>
+            </div>
+        </div>
+    </main>
+
+    <a id="download-link" class="hidden"></a>
+
+    <script>
+        // Le script JavaScript reste identique...
+    </script>
+</body>
+</html>
+
+    <script>
+        // Données de l'équipe (sans les 4 premières personnes)
+        let equipeData = [
+            { id: 5, nom: 'Farid Messal', role: 'Chef de chantier' },
+            { id: 6, nom: 'A Mohamed', role: 'Chef d\'équipe' },
+            { id: 7, nom: 'Antunez Loic', role: 'Chef d\'équipe' },
+            { id: 8, nom: 'Blanc Marquis D', role: 'Opérateur' },
+            { id: 9, nom: 'Clemente Mickael', role: 'Opérateur' },
+            { id: 10, nom: 'Cukur Ayhan', role: 'Chef de chantier' },
+            { id: 11, nom: 'Cukur Mustafa', role: 'Opérateur' },
+            { id: 12, nom: 'Morgado Alex', role: 'Opérateur' },
+            { id: 13, nom: 'Rochdi Youssef', role: 'Opérateur' },
+            { id: 14, nom: 'Grandadam G', role: 'Chef de chantier' },
+            { id: 15, nom: 'Hadidi A', role: 'Opérateur' },
+            { id: 16, nom: 'Robic Nicolas', role: 'Opérateur' },
+            { id: 17, nom: 'Ribeiro-Casal A', role: 'Chef d\'équipe' },
+            { id: 18, nom: 'Moreau JC', role: 'Chef d\'équipe' },
+            { id: 19, nom: 'Mendy jeune', role: 'Opérateur' },
+            { id: 20, nom: 'Ag45-1', role: 'Opérateur' },
+            { id: 21, nom: 'Mendy Doyen', role: 'Chef d\'équipe' },
+            { id: 22, nom: 'Djebbar Khalil', role: 'Opérateur' },
+            { id: 23, nom: 'Nasser Messal', role: 'Opérateur' },
+            { id: 24, nom: 'Laaraj', role: 'Opérateur' },
+            { id: 25, nom: 'Aarab M', role: 'Opérateur' }
+        ];
+
+        // Chantiers disponibles
+        let chantiers = [
+            { id: 1, nom: 'Halle 9', code: '22541114486' },
+            { id: 2, nom: 'Grand Lyon – Pont de Chasse', code: '2211113275' },
+            { id: 3, nom: 'VICHY', code: '22341113974' },
+            { id: 4, nom: 'CAMPENON BERNARD', code: '22441114303' },
+            { id: 5, nom: 'EFFIA PARKING BARET', code: '22541114454' },
+            { id: 6, nom: 'EFFIA PARKING CANNES', code: '22541114465' },
+            { id: 7, nom: 'Mirage 2000', code: '22541100038' },
+            { id: 8, nom: 'QPARK FAVENTINE', code: '' },
+            { id: 9, nom: 'BOUYGUE - VELODROME', code: '22541114488' },
+            { id: 10, nom: 'FRAMATOME', code: '22141100002' },
+            { id: 11, nom: 'Atelier St Maurice', code: '' },
+            { id: 12, nom: 'SAINT GOBAIN - Atelier', code: '22541100038' },
+            { id: 13, nom: 'EFFIA – MONTPELLIER', code: '22541100038' },
+            { id: 14, nom: 'EFFIA – Parking Cour JULIEN', code: '22541114490' },
+            { id: 15, nom: 'CNR VAUGRIS', code: '22541100038' },
+            { id: 16, nom: 'QPARK HDV Marseille', code: '' },
+            { id: 17, nom: 'EFFIA BEZIERS', code: '22541100038' },
+            { id: 18, nom: 'EFFIA – Parking Chateaucreux', code: '22341114193' },
+            { id: 19, nom: 'ADISEO PONTICELLI', code: '22541100038' },
+            { id: 99, nom: 'Autre chantier', code: '' }
+        ];
+
+        let currentWeekStart = new Date(2024, 8, 2);
+        let planningData = {};
+
+        // Initialisation
+        function initApp() {
+            renderMemberList();
+            renderChantierList();
+            renderPlanningTable();
+            updateWeekDisplay();
+            loadSavedData();
+            
+            // S'abonner au système de synchronisation centralisé
+            if (window.dataSyncManager) {
+                // S'abonner aux mises à jour d'équipe
+                window.dataSyncManager.subscribe('team', function(data) {
+                    console.log('Pointage: Données d\'équipe mises à jour via synchronisation centralisée');
+                    // Synchroniser la liste d'équipe
+                    equipeData = data.members.filter(m => m.type !== 'contractor').map(m => ({
+                        id: m.id,
+                        nom: m.name,
+                        role: m.role
+                    }));
+                    renderMemberList();
+                    renderPlanningTable();
+                }, 'pointage');
+                
+                // S'abonner aux mises à jour d'affectations
+                window.dataSyncManager.subscribe('affectations', function(data) {
+                    console.log('Pointage: Affectations mises à jour via synchronisation centralisée');
+                    loadSavedData();
+                    renderPlanningTable();
+                }, 'pointage');
+            }
+            
+            // Écouter les mises à jour des affectations (compatibilité)
+            window.addEventListener('affectationsUpdated', function(event) {
+                console.log('Pointage: Affectations mises à jour', event.detail);
+                loadSavedData();
+                renderPlanningTable();
+            });
+            
+            // Écouter les changements de localStorage pour les affectations (compatibilité)
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'planning_affectations') {
+                    console.log('Pointage: Données d\'affectations mises à jour via localStorage');
+                    loadSavedData();
+                    renderPlanningTable();
+                }
+            });
+        }
+
+        // Affichage des membres
+        function renderMemberList() {
+            const container = document.getElementById('member-list');
+            container.innerHTML = '';
+
+            equipeData.forEach(member => {
+                const item = document.createElement('div');
+                item.className = 'member-item';
+                item.innerHTML = `
+                    <div class="member-info">
+                        <h4>${member.nom}</h4>
+                        <div class="member-role">${member.role}</div>
+                    </div>
+                    <button class="delete-member" onclick="deleteMember(${member.id})">🗑️</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Ajouter un membre
+        function addMember() {
+            const nom = document.getElementById('new-member-name').value.trim();
+            const role = document.getElementById('new-member-role').value.trim();
+
+            if (!nom) {
+                alert('Veuillez saisir un nom de membre');
+                return;
+            }
+
+            const newId = equipeData.length > 0 ? Math.max(...equipeData.map(m => m.id)) + 1 : 1;
+            equipeData.push({ id: newId, nom, role: role || 'Opérateur' });
+
+            document.getElementById('new-member-name').value = '';
+            document.getElementById('new-member-role').value = '';
+
+            renderMemberList();
+            renderPlanningTable();
+            showNotification('Membre ajouté', 'success');
+        }
+
+        // Supprimer un membre
+        function deleteMember(id) {
+            if (confirm('Supprimer ce membre ?')) {
+                equipeData = equipeData.filter(m => m.id !== id);
+                
+                Object.keys(planningData).forEach(key => {
+                    if (key.startsWith(`${id}-`)) {
+                        delete planningData[key];
+                    }
+                });
+
+                renderMemberList();
+                renderPlanningTable();
+                updateSummary();
+                showNotification('Membre supprimé', 'success');
+            }
+        }
+
+        // Affichage des chantiers
+        function renderChantierList() {
+            const container = document.getElementById('chantier-list');
+            container.innerHTML = '';
+
+            chantiers.forEach(chantier => {
+                const item = document.createElement('div');
+                item.className = 'chantier-item';
+                item.innerHTML = `
+                    <div class="chantier-info">
+                        <h4>${chantier.nom}</h4>
+                        <div class="chantier-code">${chantier.code}</div>
+                    </div>
+                    <button class="delete-chantier" onclick="deleteChantier(${chantier.id})">🗑️</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Ajouter un chantier
+        function addChantier() {
+            const nom = document.getElementById('new-chantier-name').value.trim();
+            const code = document.getElementById('new-chantier-code').value.trim();
+
+            if (!nom) {
+                alert('Veuillez saisir un nom de chantier');
+                return;
+            }
+
+            const newId = chantiers.length > 0 ? Math.max(...chantiers.map(c => c.id)) + 1 : 1;
+            chantiers.push({ id: newId, nom, code });
+
+            document.getElementById('new-chantier-name').value = '';
+            document.getElementById('new-chantier-code').value = '';
+
+            renderChantierList();
+            renderPlanningTable();
+            showNotification('Chantier ajouté', 'success');
+        }
+
+        // Supprimer un chantier
+        function deleteChantier(id) {
+            if (confirm('Supprimer ce chantier ?')) {
+                chantiers = chantiers.filter(c => c.id !== id);
+                renderChantierList();
+                renderPlanningTable();
+                showNotification('Chantier supprimé', 'success');
+            }
+        }
+
+        // Génération du tableau de planning
+        function renderPlanningTable() {
+            const tbody = document.getElementById('planning-tbody');
+            tbody.innerHTML = '';
+
+            equipeData.forEach(member => {
+                const row = document.createElement('tr');
+                
+                const memberCell = document.createElement('td');
+                memberCell.className = 'member-cell';
+                memberCell.innerHTML = `
+                    <div><strong>${member.nom}</strong></div>
+                    <div style="font-size: 0.8rem; color: var(--gray-700);">${member.role}</div>
+                `;
+                row.appendChild(memberCell);
+
+                const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+                days.forEach(day => {
+                    const dayCell = document.createElement('td');
+                    dayCell.className = 'day-cell';
+                    dayCell.innerHTML = createDayCell(member.id, day);
+                    row.appendChild(dayCell);
+                });
+
+                const totalCell = document.createElement('td');
+                totalCell.className = 'total-cell';
+                totalCell.id = `total-${member.id}`;
+                totalCell.textContent = '0h';
+                row.appendChild(totalCell);
+
+                const commentsCell = document.createElement('td');
+                commentsCell.className = 'comments-cell';
+                commentsCell.innerHTML = `
+                    <textarea class="comments-textarea" placeholder="Commentaires de la semaine..."
+                              onchange="updatePlanning(${member.id}, 'comments', 'comments', this.value)"></textarea>
+                    <div class="static-value" style="display: none;" id="static-comments-${member.id}"></div>
+                `;
+                row.appendChild(commentsCell);
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // Création d'une cellule jour
+        function createDayCell(memberId, day) {
+            return `
+                <select class="chantier-select" onchange="updatePlanning(${memberId}, '${day}', 'chantier', this.value, true)">
+                    <option value="">-- Chantier --</option>
+                    ${chantiers.map(c => `<option value="${c.id}">${c.nom}</option>`).join('')}
+                </select>
+                <div class="static-value static-chantier" style="display: none;" id="static-chantier-${memberId}-${day}"></div>
+                
+                <select class="status-select" onchange="updatePlanning(${memberId}, '${day}', 'status', this.value, true)">
+                    <option value="">-- Statut --</option>
+                    <option value="present">Présent</option>
+                    <option value="conges">Congés</option>
+                    <option value="formation">Formation</option>
+                    <option value="absent">Absent</option>
+                    <option value="maladie">Maladie</option>
+                </select>
+                <div class="static-value static-status" style="display: none;" id="static-status-${memberId}-${day}"></div>
+                
+                <div class="hours-grid">
+                    <input type="number" class="hours-input" placeholder="Total h" step="0.5" min="0" max="12"
+                           onchange="updatePlanning(${memberId}, '${day}', 'total', this.value)">
+                    <input type="number" class="route-input" placeholder="Route h" step="0.5" min="0" max="4"
+                           onchange="updatePlanning(${memberId}, '${day}', 'route', this.value)">
+                </div>
+                <div style="display: none;" class="static-hours">
+                    <div class="static-value" id="static-total-${memberId}-${day}">Total: </div>
+                    <div class="static-value" id="static-route-${memberId}-${day}">Route: </div>
+                </div>
+                
+                <div class="activity-grid">
+                    <input type="number" class="activity-input" placeholder="Pistolet h" step="0.5" min="0"
+                           onchange="updatePlanning(${memberId}, '${day}', 'pistolet', this.value)">
+                    <input type="number" class="activity-input" placeholder="Sablage h" step="0.5" min="0"
+                           onchange="updatePlanning(${memberId}, '${day}', 'sablage', this.value)">
+                    <input type="text" class="activity-input" placeholder="Autres" 
+                           onchange="updatePlanning(${memberId}, '${day}', 'autres', this.value)">
+                </div>
+                <div style="display: none;" class="static-activities">
+                    <div class="static-value" id="static-pistolet-${memberId}-${day}">Pistolet: </div>
+                    <div class="static-value" id="static-sablage-${memberId}-${day}">Sablage: </div>
+                    <div class="static-value" id="static-autres-${memberId}-${day}">Autres: </div>
+                </div>
+            `;
+        }
+
+        // Mise à jour du planning
+        function updatePlanning(memberId, day, field, value, askForWeek = false) {
+            let key;
+            
+            if (day === 'comments') {
+                key = `${memberId}-comments`;
+            } else {
+                key = `${memberId}-${day}`;
+            }
+            
+            if (!planningData[key]) {
+                planningData[key] = {};
+            }
+            
+            planningData[key][field] = value;
+            
+            updateStaticDisplay(memberId, day, field, value);
+
+            const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+
+            if (askForWeek) {
+                if (field === 'chantier' && value) {
+                    const chantierName = chantiers.find(c => c.id == value)?.nom || 'ce chantier';
+                    if (confirm(`Appliquer "${chantierName}" à toute la semaine pour ce membre ?`)) {
+                        days.forEach(d => {
+                            const dayKey = `${memberId}-${d}`;
+                            if (!planningData[dayKey]) planningData[dayKey] = {};
+                            planningData[dayKey]['chantier'] = value;
+                            const selectEl = document.querySelector(`select[onchange*="'${d}', 'chantier'"][onchange*="updatePlanning(${memberId},"]`);
+                            if (selectEl) selectEl.value = value;
+                            updateStaticDisplay(memberId, d, 'chantier', value);
+                        });
+                    }
+                }
+
+                const weeklyStatuses = ['conges', 'formation', 'absent', 'maladie'];
+                if (field === 'status' && weeklyStatuses.includes(value)) {
+                    const statusText = document.querySelector(`select[onchange*="'${day}', 'status'"] option[value='${value}']`).textContent;
+                     if (confirm(`Appliquer le statut "${statusText}" à toute la semaine pour ce membre ?`)) {
+                        days.forEach(d => {
+                            const dayKey = `${memberId}-${d}`;
+                            if (!planningData[dayKey]) planningData[dayKey] = {};
+                            planningData[dayKey]['status'] = value;
+                            planningData[dayKey]['total'] = '0';
+
+                            const statusSelect = document.querySelector(`select[onchange*="'${d}', 'status'"][onchange*="updatePlanning(${memberId},"]`);
+                            if (statusSelect) statusSelect.value = value;
+                            updateStaticDisplay(memberId, d, 'status', value);
+
+                            const totalInput = document.querySelector(`input[onchange*="'${d}', 'total'"][onchange*="updatePlanning(${memberId},"]`);
+                            if (totalInput) totalInput.value = '0';
+                            updateStaticDisplay(memberId, d, 'total', '0');
+                        });
+                    }
+                }
+            }
+
+            if (day !== 'comments') {
+                calculateMemberTotal(memberId);
+            }
+            
+            updateSummary();
+        }
+
+
+        // Mettre à jour l'affichage statique pour le PDF
+        function updateStaticDisplay(memberId, day, field, value) {
+            if (day === 'comments') {
+                const staticElement = document.getElementById(`static-comments-${memberId}`);
+                if (staticElement) {
+                    staticElement.textContent = value;
+                }
+                return;
+            }
+
+            const staticElement = document.getElementById(`static-${field}-${memberId}-${day}`);
+            if (staticElement) {
+                if (field === 'chantier' && value) {
+                    const chantier = chantiers.find(c => c.id == value);
+                    staticElement.textContent = chantier ? chantier.nom : '';
+                } else if (field === 'status' && value) {
+                    const statusLabels = {
+                        'present': 'Présent',
+                        'conges': 'Congés',
+                        'formation': 'Formation',
+                        'absent': 'Absent',
+                        'maladie': 'Maladie'
+                    };
+                    staticElement.textContent = statusLabels[value] || value;
+                    staticElement.className = `static-value static-status ${value}`;
+                } else if (['total', 'route', 'pistolet', 'sablage'].includes(field)) {
+                    const labels = {
+                        'total': 'Total',
+                        'route': 'Route',
+                        'pistolet': 'Pistolet',
+                        'sablage': 'Sablage'
+                    };
+                    staticElement.textContent = `${labels[field]}: ${value}h`;
+                } else if (field === 'autres') {
+                    staticElement.textContent = `Autres: ${value}`;
+                }
+            }
+        }
+
+        // Calculer le total d'un membre
+        function calculateMemberTotal(memberId) {
+            const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+            let total = 0;
+
+            days.forEach(day => {
+                const key = `${memberId}-${day}`;
+                const dayData = planningData[key];
+                if (dayData && dayData.total) {
+                    total += parseFloat(dayData.total) || 0;
+                }
+            });
+
+            const totalCell = document.getElementById(`total-${memberId}`);
+            if (totalCell) {
+                totalCell.textContent = `${total}h`;
+            }
+        }
+
+        // Calculer les totaux par chantier
+        function calculateChantierTotals() {
+            const chantierTotals = {};
+            
+            Object.keys(planningData).forEach(key => {
+                if (!key.includes('-comments')) {
+                    const dayData = planningData[key];
+                    if (dayData.chantier && dayData.total) {
+                        const chantierId = dayData.chantier;
+                        const hours = parseFloat(dayData.total) || 0;
+                        
+                        if (!chantierTotals[chantierId]) {
+                            chantierTotals[chantierId] = 0;
+                        }
+                        chantierTotals[chantierId] += hours;
+                    }
+                }
+            });
+            
+            return chantierTotals;
+        }
+
+        // Mise à jour du résumé
+        function updateSummary() {
+            const summaryGrid = document.getElementById('summary-grid');
+            let totalHeures = 0;
+            let totalRoute = 0;
+            let totalPistolet = 0;
+            let totalSablage = 0;
+            const chantiersUtilises = new Set();
+            const autresActivites = new Set();
+            const statusCount = {
+                present: 0,
+                conges: 0,
+                formation: 0,
+                absent: 0,
+                maladie: 0
+            };
+
+            Object.keys(planningData).forEach(key => {
+                if (!key.includes('-comments')) {
+                    const dayData = planningData[key];
+                    if (dayData.total) totalHeures += parseFloat(dayData.total) || 0;
+                    if (dayData.route) totalRoute += parseFloat(dayData.route) || 0;
+                    if (dayData.pistolet) totalPistolet += parseFloat(dayData.pistolet) || 0;
+                    if (dayData.sablage) totalSablage += parseFloat(dayData.sablage) || 0;
+                    if (dayData.chantier) chantiersUtilises.add(dayData.chantier);
+                    if (dayData.autres && dayData.autres.trim()) autresActivites.add(dayData.autres.trim());
+                    if (dayData.status && statusCount.hasOwnProperty(dayData.status)) {
+                        statusCount[dayData.status]++;
+                    }
+                }
+            });
+
+            const chantierTotals = calculateChantierTotals();
+
+            let summaryHTML = `
+                <div class="summary-card">
+                    <div class="summary-value">${totalHeures}h</div>
+                    <div class="summary-label">Total Heures</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${totalRoute}h</div>
+                    <div class="summary-label">Heures Route</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${totalPistolet}h</div>
+                    <div class="summary-label">Heures Pistolet</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${totalSablage}h</div>
+                    <div class="summary-label">Heures Sablage</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${chantiersUtilises.size}</div>
+                    <div class="summary-label">Chantiers Actifs</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${statusCount.conges}</div>
+                    <div class="summary-label">Jours Congés</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${statusCount.maladie}</div>
+                    <div class="summary-label">Jours Maladie</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${statusCount.formation}</div>
+                    <div class="summary-label">Jours Formation</div>
+                </div>
+            `;
+
+            Object.entries(chantierTotals).forEach(([chantierId, hours]) => {
+                const chantier = chantiers.find(c => c.id == chantierId);
+                if (chantier && hours > 0) {
+                    summaryHTML += `
+                        <div class="summary-card chantier-card">
+                            <div class="summary-value">${hours}h</div>
+                            <div class="summary-label">🗠${chantier.nom}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            summaryGrid.innerHTML = summaryHTML;
+        }
+
+        // Navigation semaine
+        function previousWeek() {
+            currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+            updateWeekDisplay();
+        }
+
+        function nextWeek() {
+            currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            updateWeekDisplay();
+        }
+
+        function currentWeek() {
+            currentWeekStart = new Date();
+            const day = currentWeekStart.getDay();
+            const diff = currentWeekStart.getDate() - day + (day === 0 ? -6 : 1);
+            currentWeekStart.setDate(diff);
+            updateWeekDisplay();
+        }
+
+        function updateWeekDisplay() {
+            const endWeek = new Date(currentWeekStart);
+            endWeek.setDate(endWeek.getDate() + 4);
+            
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            const startStr = currentWeekStart.toLocaleDateString('fr-FR', options);
+            const endStr = endWeek.toLocaleDateString('fr-FR', options);
+            
+            document.getElementById('current-week').textContent = 
+                `Semaine du ${startStr} au ${endStr}`;
+        }
+
+        // Impression avec conservation des données
+        function printWithData() {
+            savePlanning();
+            Object.keys(planningData).forEach(key => {
+                if (key.includes('-comments')) {
+                    const memberId = key.split('-')[0];
+                    const commentData = planningData[key];
+                    if (commentData.comments) {
+                        updateStaticDisplay(memberId, 'comments', 'comments', commentData.comments);
+                    }
+                } else {
+                    const [memberId, day] = key.split('-');
+                    const dayData = planningData[key];
+                    
+                    Object.keys(dayData).forEach(field => {
+                        if (dayData[field]) {
+                            updateStaticDisplay(memberId, day, field, dayData[field]);
+                        }
+                    });
+                }
+            });
+            window.print();
+            showNotification('Document prêt pour impression', 'success');
+        }
+
+        // Export vers fichier HTML complet
+        function exportToHTML() {
+            Object.keys(planningData).forEach(key => {
+                if (key.includes('-comments')) {
+                    const memberId = key.split('-')[0];
+                    const commentData = planningData[key];
+                    if (commentData.comments) {
+                        updateStaticDisplay(memberId, 'comments', 'comments', commentData.comments);
+                    }
+                } else {
+                    const [memberId, day] = key.split('-');
+                    const dayData = planningData[key];
+                    
+                    Object.keys(dayData).forEach(field => {
+                        if (dayData[field]) {
+                            updateStaticDisplay(memberId, day, field, dayData[field]);
+                        }
+                    });
+                }
+            });
+            const currentHTML = document.documentElement.outerHTML;
+            const blob = new Blob([currentHTML], { type: 'text/html;charset=utf-8' });
+            const currentDate = new Date().toISOString().split('T')[0];
+            const filename = `pointage_equipe41_${currentDate}.html`;
+            downloadFile(blob, filename);
+            showNotification('Fichier HTML exporté', 'success');
+        }
+
+        // Export des données en JSON
+        function exportToJSON() {
+            const data = {
+                version: '1.0',
+                exported_at: new Date().toISOString(),
+                week: currentWeekStart.toISOString(),
+                planning: planningData,
+                chantiers: chantiers,
+                equipe: equipeData,
+                summary: calculateSummaryData()
+            };
+            
+            const jsonString = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const currentDate = new Date().toISOString().split('T')[0];
+            const filename = `donnees_pointage_${currentDate}.json`;
+            downloadFile(blob, filename);
+            showNotification('Données exportées en JSON', 'success');
+        }
+
+        // Calculer le résumé détaillé d'un membre
+        function calculateMemberSummary(memberId) {
+            const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+            let totalHours = 0;
+            let totalRoute = 0;
+            let totalPistolet = 0;
+            let totalSablage = 0;
+            const chantiers = new Set();
+            const statusDays = [];
+            const autresActivites = new Set();
+            let comments = '';
+
+            days.forEach(day => {
+                const key = `${memberId}-${day}`;
+                const dayData = planningData[key];
+                if (dayData) {
+                    if (dayData.total) totalHours += parseFloat(dayData.total) || 0;
+                    if (dayData.route) totalRoute += parseFloat(dayData.route) || 0;
+                    if (dayData.pistolet) totalPistolet += parseFloat(dayData.pistolet) || 0;
+                    if (dayData.sablage) totalSablage += parseFloat(dayData.sablage) || 0;
+                    
+                    if (dayData.chantier) {
+                        const chantier = chantiers.find(c => c.id == dayData.chantier);
+                        if (chantier) {
+                            chantiers.add(chantier.nom);
+                        }
+                    }
+                    
+                    if (dayData.status && dayData.status !== 'present') {
+                        const statusLabels = { 'conges': 'Congés', 'formation': 'Formation', 'absent': 'Absent', 'maladie': 'Maladie' };
+                        const dayNames = { 'lundi': 'Lun', 'mardi': 'Mar', 'mercredi': 'Mer', 'jeudi': 'Jeu', 'vendredi': 'Ven' };
+                        statusDays.push(`${dayNames[day]}: ${statusLabels[dayData.status]}`);
+                    }
+                    
+                    if (dayData.autres && dayData.autres.trim()) {
+                        autresActivites.add(dayData.autres.trim());
+                    }
+                }
+            });
+
+            const commentsKey = `${memberId}-comments`;
+            if (planningData[commentsKey] && planningData[commentsKey].comments) {
+                comments = planningData[commentsKey].comments;
+            }
+
+            return {
+                totalHours,
+                totalRoute,
+                totalPistolet,
+                totalSablage,
+                chantiers: Array.from(chantiers),
+                statusDays,
+                autresActivites: Array.from(autresActivites),
+                comments,
+                hasActivity: totalHours > 0 || statusDays.length > 0 || (comments && comments.length > 0) || Object.values(planningData).some(pd => Object.keys(pd).length > 0)
+            };
+        }
+
+        // Calculer les données de résumé
+        function calculateSummaryData() {
+            let totalHeures = 0, totalRoute = 0, totalPistolet = 0, totalSablage = 0;
+            const statusCount = { present: 0, conges: 0, formation: 0, absent: 0, maladie: 0 };
+
+            Object.keys(planningData).forEach(key => {
+                if (!key.includes('-comments')) {
+                    const dayData = planningData[key];
+                    if (dayData.total) totalHeures += parseFloat(dayData.total) || 0;
+                    if (dayData.route) totalRoute += parseFloat(dayData.route) || 0;
+                    if (dayData.pistolet) totalPistolet += parseFloat(dayData.pistolet) || 0;
+                    if (dayData.sablage) totalSablage += parseFloat(dayData.sablage) || 0;
+                    if (dayData.status && statusCount.hasOwnProperty(dayData.status)) {
+                        statusCount[dayData.status]++;
+                    }
+                }
+            });
+
+            return {
+                totalHeures, totalRoute, totalPistolet, totalSablage, statusCount,
+                chantierTotals: calculateChantierTotals()
+            };
+        }
+
+        // Préparation pour envoi par email (version améliorée)
+        function exportToEmail() {
+            const summaryData = calculateSummaryData();
+            const weekInfo = document.getElementById('current-week').textContent;
+            
+            let emailBody = `Bonjour,\n\nVoici le pointage hebdomadaire de l'équipe 41 pour la ${weekInfo}.\n\n`;
+            emailBody += `RÉSUMÉ GLOBAL:\n`;
+            emailBody += `- Total heures: ${summaryData.totalHeures}h\n`;
+            emailBody += `- Heures route: ${summaryData.totalRoute}h\n`;
+            emailBody += `- Heures pistolet: ${summaryData.totalPistolet}h\n`;
+            emailBody += `- Heures sablage: ${summaryData.totalSablage}h\n`;
+            emailBody += `- Jours congés: ${summaryData.statusCount.conges}\n`;
+            emailBody += `- Jours maladie: ${summaryData.statusCount.maladie}\n`;
+            emailBody += `- Jours formation: ${summaryData.statusCount.formation}\n\n`;
+
+            emailBody += `RÉPARTITION PAR CHANTIER:\n`;
+            Object.entries(summaryData.chantierTotals).forEach(([chantierId, hours]) => {
+                const chantier = chantiers.find(c => c.id == chantierId);
+                if (chantier && hours > 0) {
+                    emailBody += `- ${chantier.nom} (${chantier.code || 'N/A'}): ${hours}h\n`;
+                }
+            });
+            emailBody += `\n--------------------------------------\n`;
+            emailBody += `DÉTAILS PAR MEMBRE :\n`;
+            emailBody += `--------------------------------------\n\n`;
+
+            equipeData.forEach(member => {
+                const memberSummary = calculateMemberSummary(member.id);
+                const memberDataExists = Object.keys(planningData).some(k => k.startsWith(`${member.id}-`));
+
+                if (memberDataExists) {
+                    emailBody += `👤 ${member.nom.toUpperCase()} - Total Semaine: ${memberSummary.totalHours}h\n`;
+                    const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+                    let hasDataForDay = false;
+                    days.forEach(day => {
+                        const key = `${member.id}-${day}`;
+                        const dayData = planningData[key];
+                        if (dayData && Object.keys(dayData).length > 0) {
+                             hasDataForDay = true;
+                            let dayString = `  - ${day.charAt(0).toUpperCase() + day.slice(1)}: `;
+                            const status = dayData.status;
+                            const statusLabels = { 'conges': 'Congés', 'formation': 'Formation', 'absent': 'Absent', 'maladie': 'Maladie' };
+                            if (status && status !== 'present') {
+                                dayString += `[${statusLabels[status].toUpperCase()}]`;
+                            } else if (parseFloat(dayData.total || 0) > 0) {
+                                const chantier = chantiers.find(c => c.id == dayData.chantier);
+                                const total = dayData.total || '0';
+                                dayString += `${total}h sur ${chantier ? chantier.nom : 'Non défini'}`;
+                            } else {
+                               dayString += "Pas de données";
+                            }
+                            emailBody += `${dayString}\n`;
+                        }
+                    });
+
+                     if (!hasDataForDay) {
+                        emailBody += "  - Aucune activité enregistrée pour la semaine.\n";
+                    }
+
+                    const commentsKey = `${member.id}-comments`;
+                    if (planningData[commentsKey] && planningData[commentsKey].comments) {
+                        emailBody += `  Commentaires: ${planningData[commentsKey].comments}\n`;
+                    }
+                    emailBody += `\n`;
+                }
+            });
+            
+            emailBody += `\nCordialement,\nÉquipe 41 - Chasse sur Rhône`;
+            emailBody += `\n\n---\nNote: Le fichier de données JSON complet a été téléchargé et peut être joint à cet e-mail.`;
+
+            const subject = encodeURIComponent(`Pointage Hebdomadaire Équipe 41 - ${weekInfo}`);
+            const body = encodeURIComponent(emailBody);
+            const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+            
+            window.location.href = mailtoLink;
+            
+            exportToJSON();
+            
+            showNotification('Email préparé - Données JSON exportées pour attachement', 'info');
+        }
+
+
+        // Import des données depuis fichier JSON
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.planning) planningData = data.planning;
+                    if (data.chantiers) chantiers = data.chantiers;
+                    if (data.equipe) equipeData = data.equipe;
+                    if (data.week) currentWeekStart = new Date(data.week);
+                    
+                    renderMemberList();
+                    renderChantierList();
+                    renderPlanningTable();
+                    updateWeekDisplay();
+                    
+                    setTimeout(() => {
+                        loadDataIntoFields();
+                        updateSummary();
+                    }, 500);
+                    
+                    showNotification('Données importées avec succès', 'success');
+                } catch (error) {
+                    console.error('Erreur import:', error);
+                    showNotification('Erreur lors de l\'import des données', 'danger');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Réinitialiser toutes les données
+        function resetAllData() {
+            if (confirm('Voulez-vous vraiment réinitialiser toutes les données ? Cette action est irréversible.')) {
+                planningData = {};
+                localStorage.removeItem('planning_hebdo');
+                
+                renderPlanningTable();
+                updateSummary();
+                showNotification('Données réinitialisées', 'info');
+            }
+        }
+
+        // Fonction utilitaire pour télécharger un fichier
+        function downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.getElementById('download-link');
+            downloadLink.href = url;
+            downloadLink.download = filename;
+            downloadLink.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Charger les données dans les champs du formulaire
+        function loadDataIntoFields() {
+            Object.keys(planningData).forEach(key => {
+                const data = planningData[key];
+                if (key.includes('-comments')) {
+                    const memberId = key.split('-')[0];
+                    const textarea = document.querySelector(`textarea[onchange*="updatePlanning(${memberId}, 'comments'"]`);
+                    if (textarea && data.comments) {
+                        textarea.value = data.comments;
+                        updateStaticDisplay(memberId, 'comments', 'comments', data.comments);
+                    }
+                } else {
+                    const [memberId, day] = key.split('-');
+                    Object.keys(data).forEach(field => {
+                        const value = data[field];
+                        const element = document.querySelector(`[onchange*="updatePlanning(${memberId}, '${day}', '${field}'"]`);
+                        if (element) {
+                            element.value = value;
+                            updateStaticDisplay(memberId, day, field, value);
+                        }
+                    });
+                }
+            });
+            
+            equipeData.forEach(member => calculateMemberTotal(member.id));
+            updateSummary();
+        }
+
+        // Sauvegarde
+        function savePlanning() {
+            const data = {
+                version: '1.0',
+                week: currentWeekStart.toISOString(),
+                planning: planningData,
+                chantiers: chantiers,
+                equipe: equipeData,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Utiliser le système de synchronisation centralisé
+            if (window.dataSyncManager) {
+                window.dataSyncManager.saveData('pointage', data);
+            } else {
+                localStorage.setItem('planning_hebdo', JSON.stringify(data));
+            }
+            showNotification('Planning sauvegardé', 'success');
+        }
+
+        // Chargement des données
+        function loadSavedData() {
+            let data = null;
+            
+            // Utiliser le système de synchronisation centralisé
+            if (window.dataSyncManager) {
+                data = window.dataSyncManager.loadData('pointage');
+            } else {
+                const saved = localStorage.getItem('planning_hebdo');
+                data = saved ? JSON.parse(saved) : null;
+            }
+            
+            if (data) {
+                try {
+                    planningData = data.planning || {};
+                    chantiers = data.chantiers || chantiers;
+                    if (data.equipe) {
+                        equipeData = data.equipe;
+                    }
+                    if (data.week) {
+                        currentWeekStart = new Date(data.week);
+                    }
+                    
+                    renderMemberList();
+                    renderChantierList();
+                    renderPlanningTable();
+                    updateWeekDisplay();
+                    
+                    setTimeout(() => {
+                        loadDataIntoFields();
+                    }, 500);
+                    
+                    showNotification('Données chargées', 'info');
+                } catch (e) {
+                    console.error('Erreur chargement:', e);
+                }
+            }
+        }
+
+        // Notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 2rem; right: 2rem; z-index: 3000;
+                padding: 1rem 1.5rem; border-radius: 0.5rem; color: white;
+                background: ${type === 'success' ? 'var(--success)' : 
+                           type === 'danger' ? 'var(--danger)' : 'var(--info)'};
+                box-shadow: var(--shadow-lg); transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialisation au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            
+            // Auto-sauvegarde toutes les 30 secondes
+            setInterval(savePlanning, 30000);
+        });
+
+        // Exemples pré-remplis pour démonstration
+        function loadExampleData() {
+            planningData['12-lundi'] = { chantier: '10', status: 'present', total: '8.5', route: '2', pistolet: '4', sablage: '2.5', autres: '' };
+            planningData['12-mardi'] = { chantier: '10', status: 'present', total: '8.5', route: '0', pistolet: '5', sablage: '3.5', autres: '' };
+            planningData['12-mercredi'] = { chantier: '10', status: 'present', total: '8.5', route: '0', pistolet: '4.5', sablage: '4', autres: '' };
+            planningData['12-jeudi'] = { chantier: '10', status: 'present', total: '8.5', route: '0', pistolet: '6', sablage: '2.5', autres: '' };
+            planningData['12-vendredi'] = { chantier: '10', status: 'present', total: '4', route: '0', pistolet: '2', sablage: '2', autres: '' };
+            planningData['12-comments'] = { comments: 'Bon travail cette semaine, très productif sur FRAMATOME' };
+            
+            planningData['25-lundi'] = { chantier: '10', status: 'present', total: '8.5', route: '1', pistolet: '3', sablage: '4.5', autres: '' };
+            planningData['25-mardi'] = { chantier: '10', status: 'present', total: '8.5', route: '0', pistolet: '4', sablage: '4.5', autres: '' };
+            planningData['25-mercredi'] = { chantier: '9', status: 'present', total: '8.5', route: '0', pistolet: '5', sablage: '3.5', autres: '' };
+            planningData['25-jeudi'] = { chantier: '9', status: 'formation', total: '8', route: '0', pistolet: '0', sablage: '0', autres: 'Formation sécurité' };
+            planningData['25-vendredi'] = { chantier: '5', status: 'present', total: '8.5', route: '0', pistolet: '6', sablage: '2.5', autres: '' };
+            planningData['25-comments'] = { comments: 'Formation sécurité jeudi - Très motivé' };
+            
+            planningData['5-lundi'] = { chantier: '1', status: 'present', total: '8', route: '1', pistolet: '0', sablage: '0', autres: 'Supervision' };
+            planningData['5-mardi'] = { chantier: '1', status: 'present', total: '8', route: '0', pistolet: '3', sablage: '2', autres: 'Contrôle' };
+            planningData['5-mercredi'] = { chantier: '', status: 'conges', total: '0', route: '0', pistolet: '0', sablage: '0', autres: '' };
+            planningData['5-jeudi'] = { chantier: '', status: 'conges', total: '0', route: '0', pistolet: '0', sablage: '0', autres: '' };
+            planningData['5-vendredi'] = { chantier: '1', status: 'present', total: '8', route: '0', pistolet: '4', sablage: '1', autres: 'Finalisation' };
+            planningData['5-comments'] = { comments: 'Congés mercredi et jeudi - Retour vendredi pour finaliser' };
+        }
+
+        // Charger les exemples au démarrage si aucune donnée n'est sauvegardée
+        setTimeout(() => {
+            const saved = localStorage.getItem('planning_hebdo');
+            if (!saved) {
+                loadExampleData();
+                loadDataIntoFields();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,3545 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning PZO - Affectations par Chantiers</title>
+    <!-- QR Code Library - Version plus récente -->
+    <style>
+        :root {
+            --primary-red: #dc2626;
+            --primary-orange: #ea580c;
+            --primary-blue: #2563eb;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --info: #0ea5e9;
+            --gray-50: #f8fafc;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        /* Sidebar permanent unifié */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: #000000;
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            align-items: center;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+            justify-content: center;
+            -webkit-justify-content: center;
+            -moz-justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.5rem 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.7;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #dc2626;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #dc2626;
+            font-weight: 600;
+        }
+
+        .nav-item .icon {
+            display: inline-block;
+            width: 1.5rem;
+            margin-right: 0.75rem;
+            text-align: center;
+        }
+
+        /* Contenu principal */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            background: var(--gray-50);
+        }
+
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-top {
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            justify-content: space-between;
+            -webkit-justify-content: space-between;
+            -moz-justify-content: space-between;
+            align-items: center;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-red);
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            align-items: center;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-actions {
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            gap: 1rem;
+            align-items: center;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            display: -webkit-inline-flex;
+            display: -moz-inline-flex;
+            align-items: center;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #15803d;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-red);
+            border: 2px solid var(--primary-red);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--gray-300);
+            color: var(--gray-900);
+            border: 2px solid var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-400);
+            border-color: var(--gray-400);
+            color: var(--gray-900);
+        }
+
+        /* Contenu principal */
+        .content {
+            padding: 2rem;
+        }
+
+        .content-grid {
+            display: grid;
+            display: -webkit-grid;
+            display: -moz-grid;
+            grid-template-columns: 1fr 2fr;
+            -webkit-grid-template-columns: 1fr 2fr;
+            -moz-grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            -webkit-gap: 2rem;
+            -moz-gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Cartes */
+        .card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            justify-content: space-between;
+            -webkit-justify-content: space-between;
+            -moz-justify-content: space-between;
+            align-items: center;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--gray-900);
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            align-items: center;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Liste des membres d'équipe */
+        .team-list {
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            flex-direction: column;
+            -webkit-flex-direction: column;
+            -moz-flex-direction: column;
+            gap: 1rem;
+        }
+
+        .team-member {
+            padding: 0.75rem;
+            padding-top: 1.25rem; /* Plus d'espace en haut pour la barre de couleur */
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-width: 150px;
+            flex: 0 0 auto;
+            position: relative;
+        }
+
+        .team-list-horizontal .team-member {
+            margin-bottom: 0;
+        }
+
+        .team-member:hover {
+            border-color: var(--primary-red);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .team-member.selected {
+            background: linear-gradient(135deg, #ea580c, #f97316) !important;
+            color: white !important;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(234, 88, 12, 0.3);
+        }
+
+        .team-member.selected .member-name {
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .team-member.selected .member-role {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .selection-counter {
+            background: var(--primary-orange);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: inline-block;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .member-name {
+            font-weight: bold;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+
+        .member-role {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+        }
+
+        .member-role.chef {
+            color: var(--primary-red);
+            font-weight: 600;
+        }
+
+        .member-role.operateur {
+            color: var(--primary-blue);
+        }
+
+        /* Sélection de chantiers */
+        .chantier-selection {
+            margin-bottom: 2rem;
+        }
+
+        .chantier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chantier-item {
+            padding: 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .chantier-item:hover {
+            border-color: var(--primary-red);
+            background: var(--gray-50);
+        }
+
+        .chantier-item.selected {
+            border-color: var(--primary-red);
+            background: #fef2f2;
+            color: var(--primary-red);
+            font-weight: 600;
+        }
+
+        .chantier-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Sélection des jours */
+        .days-selection {
+            margin-bottom: 2rem;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .day-item {
+            padding: 0.75rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .day-item:hover {
+            border-color: var(--primary-red);
+            background: var(--gray-50);
+        }
+
+        .day-item.selected {
+            border-color: var(--primary-red);
+            background: var(--primary-red);
+            color: white;
+        }
+
+        /* Planning hebdomadaire */
+        .planning-section {
+            margin-top: 2rem;
+        }
+
+        .week-selector {
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            align-items: center;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .week-selector label {
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .week-selector select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .planning-table-container {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: visible;
+            margin: 0;
+            padding: 0;
+            max-width: none;
+        }
+
+        /* Styles de compatibilité Chrome/Safari */
+        .team-list-horizontal {
+            display: flex !important;
+            display: -webkit-flex !important;
+            display: -moz-flex !important;
+            flex-wrap: wrap !important;
+            -webkit-flex-wrap: wrap !important;
+            -moz-flex-wrap: wrap !important;
+            gap: 0.75rem !important;
+            justify-content: flex-start !important;
+            -webkit-justify-content: flex-start !important;
+            -moz-justify-content: flex-start !important;
+            align-items: flex-start !important;
+            -webkit-align-items: flex-start !important;
+            -moz-align-items: flex-start !important;
+        }
+
+        .qr-generator-section {
+            display: flex !important;
+            display: -webkit-flex !important;
+            display: -moz-flex !important;
+            flex-direction: column !important;
+            -webkit-flex-direction: column !important;
+            -moz-flex-direction: column !important;
+            gap: 4px !important;
+            align-items: center !important;
+            -webkit-align-items: center !important;
+            -moz-align-items: center !important;
+        }
+
+        .qr-display {
+            display: flex !important;
+            display: -webkit-flex !important;
+            display: -moz-flex !important;
+            justify-content: center !important;
+            -webkit-justify-content: center !important;
+            -moz-justify-content: center !important;
+            align-items: center !important;
+            -webkit-align-items: center !important;
+            -moz-align-items: center !important;
+        }
+
+        .planning-table {
+            width: auto;
+            min-width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 0.5rem;
+            overflow: visible;
+            box-shadow: var(--shadow-md);
+            table-layout: auto;
+            -webkit-border-collapse: collapse;
+            -moz-border-collapse: collapse;
+        }
+
+        .planning-table th,
+        .planning-table td {
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--gray-200);
+            height: auto;
+            vertical-align: top;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            -webkit-hyphens: auto;
+            -moz-hyphens: auto;
+            -ms-hyphens: auto;
+            hyphens: auto;
+        }
+
+        .planning-table th {
+            background: var(--primary-red);
+            color: white;
+            font-weight: 700;
+            font-size: 0.7rem;
+            min-width: 80px;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .planning-table td {
+            background: white;
+        }
+
+        .planning-table tr:nth-child(even) td {
+            background: var(--gray-50);
+        }
+
+        .affectation-cell {
+            min-height: 60px;
+            height: auto;
+            vertical-align: top;
+            overflow: visible;
+        }
+
+        .affectation-item {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            margin: 0.125rem 0;
+            display: block;
+            line-height: 1.2;
+        }
+
+        /* Styles pour les affectations hebdomadaires - seulement dans la liste de sélection */
+
+        /* Styles pour les membres dans la liste de sélection */
+        .team-member-weekly {
+            background: linear-gradient(135deg, #16a34a, #22c55e) !important;
+            color: white !important;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(22, 163, 74, 0.3);
+        }
+
+        .team-member-weekly .member-name {
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .team-member-weekly .member-role {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Styles pour les membres non affectés */
+        .team-member-not-affected {
+            background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+            color: white !important;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+        }
+
+        .team-member-not-affected .member-name {
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .team-member-not-affected .member-role {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Styles pour les membres indisponibles (congés, maladie, formation) */
+        .team-member-unavailable {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+            color: #000000 !important;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+            cursor: not-allowed !important;
+            opacity: 0.8;
+        }
+
+        .team-member-unavailable .member-name {
+            color: #000000 !important;
+            font-weight: 600;
+        }
+
+        .team-member-unavailable .member-role {
+            color: rgba(0, 0, 0, 0.7) !important;
+        }
+
+        .team-member-unavailable:hover {
+            transform: none !important;
+            box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3) !important;
+        }
+
+        .member-status-unavailable {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #000000 !important;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-top: 0.25rem;
+            text-align: center;
+        }
+
+        .affectation-item.chef {
+            background: var(--primary-red);
+        }
+
+        /* Styles pour les membres indisponibles dans le planning */
+        .affectation-item.unavailable {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+            color: #000000 !important;
+            border: 2px solid #d97706;
+            position: relative;
+        }
+
+        .member-name-unavailable {
+            font-weight: 600;
+            color: #000000 !important;
+            font-size: 0.9rem;
+        }
+
+        .member-status-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #000000 !important;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            margin-top: 0.2rem;
+            text-align: center;
+        }
+
+        /* Styles pour le logo Altrad Prezioso */
+        .print-logo {
+            display: none;
+        }
+
+        .logo-container {
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            align-items: center;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+            justify-content: center;
+            -webkit-justify-content: center;
+            -moz-justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-image {
+            max-height: 60px;
+            width: auto;
+        }
+
+        /* Styles d'impression pour le planning hebdomadaire */
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Configuration de la page - A4 Paysage */
+            @page {
+                margin: 0.2cm;
+                size: A4 landscape;
+            }
+
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                font-size: 8px !important;
+            }
+
+            /* Afficher le logo pour l'impression */
+            .print-logo {
+                display: block !important;
+                margin-bottom: 2px !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .logo-container {
+                margin-bottom: 2px !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .logo-image {
+                max-height: 25px !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Masquer tous les éléments sauf le tableau de planning */
+            .sidebar,
+            .main-header,
+            .week-selection-top,
+            .members-selection-top,
+            .content-grid > div:not(.planning-section),
+            .planning-section .planning-controls,
+            .planning-section .planning-actions,
+            .planning-section h3,
+            .planning-section .card-header,
+            .color-legend {
+                display: none !important;
+            }
+
+            /* Optimiser le conteneur principal */
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
+
+            /* Titre personnalisé pour l'impression */
+            .planning-section::before {
+                content: "PLANNING PZO SEMAINE " attr(data-week);
+                display: block;
+                font-size: 10px;
+                font-weight: bold;
+                text-align: center;
+                margin: 0 0 2px 0;
+                color: #dc2626;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Optimiser la section planning */
+            .planning-section {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            /* Optimiser le tableau pour A4 paysage */
+            .planning-table-container {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+
+            .planning-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 5px !important;
+                margin: 0 !important;
+                page-break-inside: avoid !important;
+                border: 1px solid #000 !important;
+                table-layout: fixed !important;
+            }
+
+            .planning-table th,
+            .planning-table td {
+                padding: 1px !important;
+                border: 1px solid #000 !important;
+                font-size: 5px !important;
+                line-height: 1.0 !important;
+                vertical-align: top !important;
+                word-wrap: break-word !important;
+                overflow: hidden !important;
+            }
+
+            .planning-table th {
+                background: #dc2626 !important;
+                color: white !important;
+                font-weight: bold !important;
+                text-align: center !important;
+                font-size: 5px !important;
+                text-transform: uppercase !important;
+                white-space: normal !important;
+                word-break: break-word !important;
+                line-height: 1.0 !important;
+            }
+
+            /* Première colonne (jours) */
+            .planning-table td:first-child {
+                background: #f8f9fa !important;
+                color: #dc2626 !important;
+                font-weight: bold !important;
+                font-size: 5px !important;
+                text-align: center !important;
+                width: 50px !important;
+            }
+
+            /* Cellules d'affectation ultra-compactes */
+            .affectation-cell {
+                min-height: 6px !important;
+                padding: 0px !important;
+                width: auto !important;
+            }
+
+            /* Éléments d'affectation miniatures */
+            .affectation-item {
+                font-size: 4px !important;
+                padding: 1px !important;
+                margin: 0px !important;
+                border-radius: 1px !important;
+                display: block !important;
+                line-height: 1.0 !important;
+                font-weight: bold !important;
+                text-align: center !important;
+            }
+
+            /* Codes couleurs par type d'employé */
+            .affectation-item.employee-color {
+                background: #dc2626 !important; /* Rouge pour employés */
+                color: white !important;
+            }
+
+            .affectation-item.interim-color {
+                background: #2563eb !important; /* Bleu pour intérimaires */
+                color: white !important;
+            }
+
+            .affectation-item.altrad-color {
+                background: #7c3aed !important; /* Violet pour Altrad autres */
+                color: white !important;
+            }
+
+            .affectation-item.contractor-color {
+                background: #fbbf24 !important; /* Jaune pour sous-traitants */
+                color: #000000 !important;
+            }
+
+            /* Styles pour les membres indisponibles (priorité sur les couleurs de type) */
+            .affectation-item.unavailable {
+                background: #fbbf24 !important;
+                color: #000000 !important;
+                border: 1px solid #d97706 !important;
+            }
+
+            .member-name-unavailable {
+                font-size: 4px !important;
+                font-weight: bold !important;
+            }
+            
+            .member-status-badge {
+                font-size: 3px !important;
+                font-style: italic !important;
+            }
+            
+            .contractor-count {
+                font-size: 3px !important;
+                font-style: italic !important;
+            }
+
+            /* Éviter les coupures de page au milieu du tableau */
+            .planning-table,
+            .planning-table-container,
+            .planning-section {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-before: avoid !important;
+                page-break-after: avoid !important;
+            }
+
+            /* Éviter les coupures dans les lignes du tableau */
+            .planning-table tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Éviter les coupures dans les cellules */
+            .planning-table td,
+            .planning-table th {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Éviter les coupures dans les éléments d'affectation */
+            .affectation-item {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Styles d'impression pour les listes déroulantes */
+            .chantier-status {
+                font-size: 6px !important;
+                padding: 1px !important;
+                border: 1px solid #000 !important;
+                background: white !important;
+                color: #000 !important;
+            }
+
+            .chantier-status option {
+                font-size: 6px !important;
+                padding: 1px !important;
+            }
+
+            /* Masquer les listes déroulantes vides dans l'impression */
+            .chantier-status:not([data-status-selected]) {
+                display: none !important;
+            }
+
+            /* Afficher seulement les statuts sélectionnés */
+            .chantier-status[data-status-selected] {
+                display: block !important;
+                background: #f0f0f0 !important;
+                border: 1px solid #000 !important;
+                padding: 2px !important;
+                text-align: center !important;
+                font-weight: bold !important;
+            }
+
+            /* Styles d'impression pour les commentaires */
+            .chantier-comment {
+                font-size: 8px !important;
+                padding: 3px !important;
+                border: 1px solid #000 !important;
+                background: #f8f8f8 !important;
+                color: #000 !important;
+                min-height: 30px !important;
+                max-height: 80px !important;
+                line-height: 1.2 !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                word-wrap: break-word !important;
+            }
+
+            /* Masquer les commentaires vides dans l'impression */
+            .chantier-comment:not([data-comment-filled]) {
+                display: none !important;
+            }
+
+            /* Afficher seulement les commentaires remplis */
+            .chantier-comment[data-comment-filled] {
+                display: block !important;
+                background: #f0f8ff !important;
+                border: 1px solid #000 !important;
+                padding: 3px !important;
+                font-style: normal !important;
+                font-weight: normal !important;
+                font-size: 8px !important;
+                line-height: 1.2 !important;
+                min-height: 30px !important;
+                max-height: 80px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                word-wrap: break-word !important;
+            }
+
+            /* Styles d'impression pour les QR codes et images */
+            .image-upload {
+                display: none !important;
+            }
+
+            
+            .onedrive-qr-btn {
+                display: none !important;
+            }
+            
+            .delete-qr-btn {
+                display: none !important;
+            }
+            
+            .qr-display img {
+                max-height: 200px !important;
+                border: 2px solid #000 !important;
+                margin: 5px auto !important;
+                page-break-inside: avoid !important;
+            }
+
+            .test-qr-btn {
+                display: none !important;
+            }
+
+            .reload-qr-btn {
+                display: none !important;
+            }
+
+            /* Masquer les sections sans QR code */
+            .qr-code-display:not([data-qr-generated]) {
+                display: none !important;
+            }
+
+            /* Afficher seulement les QR codes générés */
+            .qr-code-display[data-qr-generated] {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                padding: 2px !important;
+            }
+
+            .qr-code-display img {
+                max-width: 30px !important;
+                max-height: 30px !important;
+                border: 1px solid #000 !important;
+            }
+
+            /* Titre du planning */
+            .planning-title {
+                text-align: center !important;
+                font-size: 14px !important;
+                font-weight: bold !important;
+                margin: 0 0 8px 0 !important;
+                padding: 5px 0 !important;
+                color: #dc2626 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                border-bottom: 2px solid #dc2626 !important;
+            }
+
+            /* Informations de la semaine */
+            .week-info {
+                text-align: center !important;
+                font-size: 10px !important;
+                font-weight: 600 !important;
+                margin: 0 0 8px 0 !important;
+                padding: 4px 0 !important;
+                color: #dc2626 !important;
+                background: rgba(220, 38, 38, 0.1) !important;
+                border-radius: 3px !important;
+            }
+
+
+            /* Masquer les colonnes weekend si pas d'affectations */
+            .planning-table.hide-weekend tr td:nth-child(6),
+            .planning-table.hide-weekend tr td:nth-child(7),
+            .planning-table.hide-weekend tr th:nth-child(6),
+            .planning-table.hide-weekend tr th:nth-child(7) {
+                display: none !important;
+            }
+        }
+
+        .affectation-item.operateur {
+            background: var(--success);
+        }
+
+        /* Codes couleurs par type d'employé pour l'affichage normal */
+        .affectation-item.employee-color {
+            background: #dc2626 !important; /* Rouge pour employés */
+            color: white !important;
+        }
+
+        .affectation-item.interim-color {
+            background: #2563eb !important; /* Bleu pour intérimaires */
+            color: white !important;
+        }
+
+        .affectation-item.altrad-color {
+            background: #7c3aed !important; /* Violet pour Altrad autres */
+            color: white !important;
+        }
+
+        .affectation-item.contractor-color {
+            background: #fbbf24 !important; /* Jaune pour sous-traitants */
+            color: #000000 !important;
+        }
+
+        /* Styles pour les listes déroulantes de statut */
+        .chantier-status {
+            width: 100%;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 4px;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.25rem;
+            background: white;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chantier-status:hover {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 1px var(--primary-red);
+        }
+
+        .chantier-status:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+        }
+
+        .chantier-status option {
+            padding: 0.5rem;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Styles pour les zones de commentaires */
+        .chantier-comment {
+            width: 100%;
+            font-size: 12px;
+            padding: 4px;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.25rem;
+            background: white;
+            color: var(--gray-700);
+            resize: none;
+            min-height: 40px;
+            max-height: 200px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .chantier-comment:hover {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 1px var(--primary-red);
+        }
+
+        .chantier-comment:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+        }
+
+        .chantier-comment::placeholder {
+            color: var(--gray-400);
+            font-style: italic;
+        }
+
+        /* Styles pour la section documents/photos */
+        .document-section {
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            flex-direction: column;
+            -webkit-flex-direction: column;
+            -moz-flex-direction: column;
+            gap: 4px;
+            align-items: center;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+        }
+
+
+        .generate-qr-btn {
+            font-size: 10px;
+            padding: 2px 4px;
+            border: none;
+            background: #059669;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .generate-qr-btn:hover {
+            background: #047857;
+        }
+
+        .generate-qr-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .delete-qr-btn {
+            font-size: 9px;
+            padding: 2px 4px;
+            border: none;
+            background: #dc2626;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.2s ease;
+        }
+
+        .delete-qr-btn:hover {
+            background: #b91c1c;
+        }
+
+        .qr-buttons {
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            gap: 2px;
+        }
+
+        .test-qr-btn {
+            font-size: 8px;
+            padding: 1px 2px;
+            border: none;
+            background: #7c3aed;
+            color: white;
+            border-radius: 2px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .test-qr-btn:hover {
+            background: #6d28d9;
+        }
+
+        .reload-qr-btn {
+            font-size: 8px;
+            padding: 1px 2px;
+            border: none;
+            background: #f59e0b;
+            color: white;
+            border-radius: 2px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .reload-qr-btn:hover {
+            background: #d97706;
+        }
+
+        .qr-code-display {
+            min-height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2px;
+        }
+
+        .qr-code-display img {
+            max-width: 100%;
+            max-height: 60px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        .qr-code-display .no-qr {
+            font-size: 8px;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Styles pour la légende des couleurs */
+        .color-legend {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: 0.5rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+
+        .legend-items {
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            flex-wrap: wrap;
+            -webkit-flex-wrap: wrap;
+            -moz-flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .legend-item {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .legend-item.employee-color {
+            background: #dc2626;
+            color: white;
+        }
+
+        .legend-item.interim-color {
+            background: #2563eb;
+            color: white;
+        }
+
+        .legend-item.altrad-color {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .legend-item.contractor-color {
+            background: #fbbf24;
+            color: #000000;
+        }
+
+        .legend-item.unavailable {
+            background: #fbbf24;
+            color: #000000;
+        }
+
+        /* Styles pour les sections de membres */
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 1rem 0 0.5rem 0;
+            padding: 0.5rem 0;
+            border-bottom: 2px solid var(--gray-200);
+            text-align: center;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        /* Codes couleurs pour les membres d'équipe */
+        .team-member.employee {
+            border: 2px solid #dc2626; /* Rouge pour employés */
+            position: relative;
+        }
+
+        .team-member.employee::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: #dc2626;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        /* Style spécial pour les intérimaires */
+        .interim-member {
+            border: 2px solid #2563eb; /* Bleu pour intérimaires */
+            position: relative;
+        }
+
+        .interim-member::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: #2563eb;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        .interim-member .member-name {
+            color: #1d4ed8;
+        }
+
+        /* Style spécial pour les sous-traitants */
+        .contractor-member {
+            border: 2px solid #fbbf24; /* Jaune pour sous-traitants */
+            position: relative;
+        }
+
+        .contractor-member::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: #fbbf24;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        .contractor-member .member-name {
+            color: #d97706;
+        }
+
+        /* Style pour les membres Altrad autres */
+        .team-member.altrad-autres {
+            border: 2px solid #7c3aed; /* Violet pour Altrad autres */
+            position: relative;
+        }
+
+        .team-member.altrad-autres::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: #7c3aed;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        /* Style pour le nombre de personnes des sous-traitants */
+        .contractor-count {
+            font-size: 0.7rem;
+            color: rgba(0, 0, 0, 0.7);
+            font-weight: 500;
+            margin-top: 0.1rem;
+            text-align: center;
+        }
+
+
+        /* Masquer les colonnes weekend si pas d'affectations */
+        .planning-table.hide-weekend tr td:nth-child(6),
+        .planning-table.hide-weekend tr td:nth-child(7),
+        .planning-table.hide-weekend tr th:nth-child(6),
+        .planning-table.hide-weekend tr th:nth-child(7) {
+            display: none !important;
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            display: -webkit-flex;
+            display: -moz-flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: center;
+            -webkit-justify-content: center;
+            -moz-justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chantier-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .days-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .planning-table {
+                font-size: 0.8rem;
+            }
+            
+            .planning-table th,
+            .planning-table td {
+                padding: 0.5rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Styles d'impression */
+        @media print {
+            .sidebar,
+            .header-actions,
+            .actions {
+                display: none !important;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+            }
+            
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+            }
+            
+            .planning-table {
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar permanent -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                🏗️ Gestionnaire Chantier
+            </div>
+            <div class="sidebar-subtitle">
+                Équipe 41 - Chasse sur Rhône
+            </div>
+        </div>
+        
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="index.html" class="nav-item">
+                    <span class="icon">🏠</span>
+                    Tableau de Bord
+                </a>
+                <a href="planning_booster.html" class="nav-item">
+                    <span class="icon">📅</span>
+                    Planning
+                </a>
+                <a href="pointage_booster_fixed.html" class="nav-item">
+                    <span class="icon">⏰</span>
+                    Pointage
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Gestion</div>
+                <a href="gestion_equipe_affectations.html" class="nav-item active">
+                    <span class="icon">👥</span>
+                    Affectations Équipe
+                </a>
+                <a href="module_equipe_modifie.html" class="nav-item">
+                    <span class="icon">👥</span>
+                    Équipe
+                </a>
+                <a href="module_travaux_materiaux_corrige.html" class="nav-item">
+                    <span class="icon">🔧</span>
+                    Travaux & Matériaux
+                </a>
+                <a href="module_reunion_moderne.html" class="nav-item">
+                    <span class="icon">🗓️</span>
+                    Réunions
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Analyse</div>
+                <a href="#" class="nav-item" onclick="alert('Module en développement')">
+                    <span class="icon">⚙️</span>
+                    Paramètres
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="main-content">
+        <header class="header">
+            <div class="header-top">
+                <h1 class="header-title">
+                    👥 Planning PZO - Affectations
+                </h1>
+                <div class="header-actions">
+                    <a href="index.html" class="btn btn-outline">
+                        🏠 Retour
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Sélection de semaine en haut -->
+            <div class="week-selection-top" style="background: white; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; box-shadow: var(--shadow-md);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="color: var(--primary-red); margin: 0;">📅 Sélection de la Semaine</h2>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <label for="weekSelect" style="font-weight: 600; color: var(--gray-700);">Semaine :</label>
+                        <select id="weekSelect" onchange="updateWeekPlanning()" style="padding: 0.5rem 1rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; font-size: 1rem;">
+                            <!-- Les semaines seront générées par JavaScript -->
+                        </select>
+                        <button class="btn btn-success" onclick="printPlanning()">
+                            🖨️ Imprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sélection des membres en largeur en haut -->
+            <div class="members-selection-top" style="background: white; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; box-shadow: var(--shadow-md);">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2 style="color: var(--primary-red); margin: 0;">👥 Sélection des Membres d'Équipe</h2>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div id="selectionCounter" class="selection-counter" style="display: none;">
+                            <span id="selectedCount">0</span> membre(s) sélectionné(s)
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="selectAllMembers()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                            ✅ Tout sélectionner
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="deselectAllMembers()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                            ❌ Tout désélectionner
+                        </button>
+                    </div>
+                </div>
+                <div class="team-list-horizontal" id="teamList" style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                        <!-- Les membres seront générés par JavaScript -->
+                    </div>
+                </div>
+            
+            <div class="content-grid" style="grid-template-columns: 1fr;">
+
+                <!-- Sélection de chantiers et jours -->
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            🏗️ Affectation Chantier
+                        </h2>
+                    </div>
+                    
+                    <!-- Sélection des chantiers -->
+                    <div class="chantier-selection">
+                        <h3 style="margin-bottom: 1rem; color: var(--gray-700);">Chantiers disponibles :</h3>
+                        <div class="chantier-grid" id="chantierGrid">
+                            <!-- Les chantiers seront générés par JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Sélection des jours -->
+                    <div class="days-selection">
+                        <h3 style="margin-bottom: 1rem; color: var(--gray-700);">Jours de la semaine :</h3>
+                        <div class="days-grid">
+                            <div class="day-item" data-day="L">Lundi</div>
+                            <div class="day-item" data-day="M">Mardi</div>
+                            <div class="day-item" data-day="M2">Mercredi</div>
+                            <div class="day-item" data-day="J">Jeudi</div>
+                            <div class="day-item" data-day="V">Vendredi</div>
+                            <div class="day-item" data-day="S">Samedi</div>
+                            <div class="day-item" data-day="D">Dimanche</div>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="assignSelected()">
+                            ✅ Affecter
+                        </button>
+                        <button class="btn btn-outline" onclick="resetSelection()">
+                            🔄 Remettre à 0
+                        </button>
+                        <button class="btn btn-secondary" onclick="printPlanning()">
+                            🖨️ Imprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logo pour l'impression -->
+            <div class="print-logo" style="display: none;">
+                <div class="logo-container">
+                    <img src="logo_altrad_prezioso.png" alt="Altrad Prezioso" class="logo-image">
+                </div>
+            </div>
+
+            <!-- Planning hebdomadaire -->
+            <div class="planning-section" data-week="">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            📅 Planning Hebdomadaire
+                        </h2>
+                    </div>
+                    
+                    <!-- Légende des codes couleurs -->
+                    <div class="color-legend">
+                        <div class="legend-title">Codes couleurs :</div>
+                        <div class="legend-items">
+                            <div class="legend-item employee-color">Employés</div>
+                            <div class="legend-item interim-color">Intérimaires</div>
+                            <div class="legend-item altrad-color">Altrad Autres</div>
+                            <div class="legend-item contractor-color">Sous-traitants</div>
+                            <div class="legend-item unavailable">Indisponibles</div>
+                        </div>
+                    </div>
+
+                    <div class="planning-table-container">
+                        <table class="planning-table" id="planningTable">
+                            <!-- Le contenu sera généré entièrement par JavaScript -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="data_sync.js"></script>
+    <script>
+        // Données des membres d'équipe (par défaut, sera remplacée par les données synchronisées)
+        const defaultTeamMembers = [
+            { name: "Aarab Mohamed", role: "Chef d'équipe 41", type: "chef" },
+            { name: "Antunez Loic", role: "Chef d'équipe 41", type: "chef" },
+            { name: "Blanc Marquis Domonique", role: "Opérateur 41", type: "operateur" },
+            { name: "Clemente Mickael", role: "Chef d'équipe 41", type: "chef" },
+            { name: "Cukur Mustafa", role: "Chef d'équipe 41", type: "chef" },
+            { name: "Cukur Ayhan", role: "Opérateur 41", type: "operateur" },
+            { name: "Morgado Alexendre", role: "Opérateur 41", type: "operateur" },
+            { name: "Rochdi Youssef", role: "Opérateur 41", type: "operateur" },
+            { name: "Grandadan Gérald", role: "Chef d'équipe 41", type: "chef" },
+            { name: "Hadidi Abdelhakim", role: "Opérateur 41", type: "operateur" },
+            { name: "Ribero Casal Antonio", role: "Chef d'équipe 41", type: "chef" },
+            { name: "Guitton Howard", role: "Chef d'équipe (ALTRAD AUTRES)", type: "chef" },
+            { name: "HOUASNIA NOUREDDINE", role: "Chef d'équipe (ALTRAD AUTRES)", type: "chef" },
+            { name: "KOUKA Nadhem", role: "Opérateur (ALTRAD AUTRES)", type: "operateur" },
+            { name: "VALENTIN YANN", role: "Opérateur (ALTRAD AUTRES)", type: "operateur" },
+            { name: "MLAYEH FATHI", role: "Opérateur (ALTRAD AUTRES)", type: "operateur" },
+            { name: "LAOUADI LAKDAR", role: "Opérateur (ALTRAD AUTRES)", type: "operateur" },
+            { name: "FADHUILI ISMAINL", role: "Opérateur (ALTRAD AUTRES)", type: "operateur" },
+            { name: "MENDY TOUSSAINT", role: "Opérateur (ALTRAD AUTRES)", type: "operateur" }
+        ];
+
+        // Données des chantiers
+        const chantiers = [
+            "HALLE 9",
+            "PONT DE CHASSE",
+            "VICHY",
+            "CAMPENON BERNARD",
+            "PARKING BARET MARSEILLE",
+            "PARKING CANNES",
+            "QPARK FAVENTINE VALENCE",
+            "STADE VELODROME MARSEILLE",
+            "FRAMATOME CHALONS",
+            "SAINT GOBAIN - Atelier",
+            "PARKING MONTPELLIER",
+            "PARKING COUR JULIEN MARSEILLE",
+            "CNR VAUGRIS",
+            "QPARK HDV MARSEILLE",
+            "PARKING BEZIERS",
+            "PARKING CHATEAUCREUX ST ETIENNE",
+            "ADISEO PONTICELLI ROUSSILLON",
+            "ATELIER ST MAURICE",
+            "AUTRES CHANTIERS (préciser)"
+        ];
+
+        // Variables globales
+        let teamMembers = [];
+        let interims = [];
+        let contractors = [];
+        let selectedMembers = [];
+        let selectedChantier = null;
+        let selectedDays = [];
+        let planningData = {};
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Charger les données d'équipe depuis le système de synchronisation
+            loadTeamDataFromSync();
+            generateTeamList();
+            generateChantierGrid();
+            generateWeekSelector();
+            loadPlanningData();
+            updateWeekPlanning();
+            
+            // Écouter les mises à jour d'équipe
+            if (window.dataSyncManager) {
+                window.dataSyncManager.subscribe('affectations', (teamData) => {
+                    try {
+                        loadTeamDataFromSync();
+                        generateTeamList();
+                        updateWeekPlanning();
+                        console.log('Affectations: Données d\'équipe mises à jour avec succès');
+                    } catch (error) {
+                        console.error('Affectations: Erreur lors de la mise à jour:', error);
+                    }
+                });
+            } else {
+                console.log('Affectations: Système de synchronisation non disponible');
+            }
+        });
+
+        // Charger les données d'équipe depuis le système de synchronisation
+        function loadTeamDataFromSync() {
+            try {
+                const syncData = window.getSyncData ? window.getSyncData() : null;
+                if (syncData && syncData.team && syncData.team.members && syncData.team.members.length > 0) {
+                    // Convertir les données du format équipe vers le format affectations
+                    teamMembers = syncData.team.members
+                        .filter(member => member.type !== 'contractor')
+                        .map(member => ({
+                            name: member.name,
+                            role: member.role,
+                            type: member.role.toLowerCase().includes('chef') ? 'chef' : 'operateur',
+                            employeeType: member.type || 'employee', // Récupérer le type d'employé
+                            status: member.status || 'available',
+                            reason: member.reason || '',
+                            dateDebut: member.dateDebut || '',
+                            dateFin: member.dateFin || ''
+                        }));
+                    
+                    // Charger les intérimaires séparément
+                    interims = syncData.team.members
+                        .filter(member => member.type === 'interimaire')
+                        .map(member => ({
+                            name: member.name,
+                            role: member.role,
+                            type: member.role.toLowerCase().includes('chef') ? 'chef' : 'operateur',
+                            employeeType: 'interimaire',
+                            status: member.status || 'available',
+                            reason: member.reason || '',
+                            dateDebut: member.dateDebut || '',
+                            dateFin: member.dateFin || ''
+                        }));
+                    
+                    // Charger les sous-traitants séparément
+                    contractors = syncData.team.members
+                        .filter(member => member.type === 'contractor')
+                        .map(member => ({
+                            name: member.name,
+                            role: member.role,
+                            type: 'operateur', // Les sous-traitants sont considérés comme opérateurs
+                            employeeType: 'contractor',
+                            status: member.status || 'available',
+                            reason: member.reason || '',
+                            dateDebut: member.dateDebut || '',
+                            dateFin: member.dateFin || ''
+                        }));
+                    
+                    console.log('Affectations: Données d\'équipe chargées depuis la synchronisation', teamMembers.length, 'membres +', interims.length, 'intérimaires +', contractors.length, 'sous-traitants');
+                    console.log('Membres d\'équipe:', teamMembers);
+                } else {
+                    console.log('Affectations: Utilisation des données par défaut (aucune donnée synchronisée)');
+                    teamMembers = defaultTeamMembers.map(member => ({
+                        ...member,
+                        employeeType: 'employee',
+                        status: 'available',
+                        reason: '',
+                        dateDebut: '',
+                        dateFin: ''
+                    }));
+                    interims = [];
+                    contractors = [];
+                }
+            } catch (error) {
+                console.error('Affectations: Erreur lors du chargement des données synchronisées:', error);
+                console.log('Affectations: Utilisation des données par défaut');
+                teamMembers = defaultTeamMembers.map(member => ({
+                    ...member,
+                    employeeType: 'employee',
+                    status: 'available',
+                    reason: '',
+                    dateDebut: '',
+                    dateFin: ''
+                }));
+                interims = [];
+                contractors = [];
+            }
+        }
+
+        // Générer la liste des membres d'équipe
+        function generateTeamList() {
+            const teamList = document.getElementById('teamList');
+            teamList.innerHTML = '';
+
+            const currentWeek = document.getElementById('weekSelect') ? document.getElementById('weekSelect').value : null;
+
+            // Section Membres d'équipe
+            if (teamMembers.length > 0) {
+                const sectionTitle = document.createElement('div');
+                sectionTitle.className = 'section-title';
+                sectionTitle.textContent = '👥 Membres d\'équipe';
+                teamList.appendChild(sectionTitle);
+
+            teamMembers.forEach((member, index) => {
+                const memberDiv = document.createElement('div');
+                    // Ajouter la classe selon le type d'employé
+                    const typeClass = member.employeeType || 'employee';
+                    memberDiv.className = `team-member ${typeClass}`;
+                memberDiv.dataset.index = index;
+                    memberDiv.dataset.type = 'member';
+                    
+                    console.log('Membre créé:', member.name, 'Type:', typeClass, 'Classes:', memberDiv.className);
+
+                    // Vérifier si le membre est indisponible
+                    const isUnavailable = member.status && ['formation', 'conge', 'maladie', 'unavailable'].includes(member.status);
+                    
+                    if (isUnavailable) {
+                        // Membre indisponible - pas de sélection possible
+                        memberDiv.classList.add('team-member-unavailable');
+                        memberDiv.onclick = null; // Pas de clic possible
+                    } else {
+                        // Membre disponible - sélection possible
+                        memberDiv.onclick = () => toggleMemberSelection(index, 'member');
+                    }
+
+                    // Vérifier si le membre est affecté toute la semaine (seulement pour les membres disponibles)
+                    const isWeeklyAffected = !isUnavailable && currentWeek ? checkWeeklyAffectation(member.name, currentWeek) : false;
+                    const isAffected = !isUnavailable && currentWeek ? checkIfMemberAffected(member.name, currentWeek) : false;
+                    
+                    if (isWeeklyAffected) {
+                        memberDiv.classList.add('team-member-weekly');
+                    } else if (currentWeek && !isAffected && !isUnavailable) {
+                        memberDiv.classList.add('team-member-not-affected');
+                    }
+
+                    // Créer le contenu avec indication du statut
+                    let statusInfo = '';
+                    if (isUnavailable) {
+                        const statusLabels = {
+                            'formation': 'Formation',
+                            'conge': 'Congé',
+                            'maladie': 'Maladie',
+                            'unavailable': 'Indisponible'
+                        };
+                        statusInfo = `<div class="member-status-unavailable">${statusLabels[member.status] || 'Indisponible'}</div>`;
+                    }
+
+                memberDiv.innerHTML = `
+                    <div class="member-name">${member.name}</div>
+                    <div class="member-role ${member.type}">${member.role}</div>
+                        ${statusInfo}
+                `;
+
+                teamList.appendChild(memberDiv);
+            });
+            }
+
+            // Section Intérimaires
+            if (interims.length > 0) {
+                const sectionTitle = document.createElement('div');
+                sectionTitle.className = 'section-title';
+                sectionTitle.textContent = '👔 Intérimaires';
+                teamList.appendChild(sectionTitle);
+
+                interims.forEach((interim, index) => {
+                    const interimDiv = document.createElement('div');
+                    interimDiv.className = 'team-member interim-member';
+                    interimDiv.dataset.index = index;
+                    interimDiv.dataset.type = 'interim';
+
+                    // Vérifier si l'intérimaire est indisponible
+                    const isUnavailable = interim.status && ['formation', 'conge', 'maladie', 'unavailable'].includes(interim.status);
+                    
+                    if (isUnavailable) {
+                        // Intérimaire indisponible - pas de sélection possible
+                        interimDiv.classList.add('team-member-unavailable');
+                        interimDiv.onclick = null; // Pas de clic possible
+                    } else {
+                        // Intérimaire disponible - sélection possible avec nombre de personnes
+                        interimDiv.onclick = () => selectInterimWithCount(index, 'interim');
+                    }
+
+                    // Vérifier si l'intérimaire est affecté toute la semaine (seulement pour les intérimaires disponibles)
+                    const isWeeklyAffected = !isUnavailable && currentWeek ? checkWeeklyAffectation(interim.name, currentWeek) : false;
+                    const isAffected = !isUnavailable && currentWeek ? checkIfMemberAffected(interim.name, currentWeek) : false;
+                    
+                    if (isWeeklyAffected) {
+                        interimDiv.classList.add('team-member-weekly');
+                    } else if (currentWeek && !isAffected && !isUnavailable) {
+                        interimDiv.classList.add('team-member-not-affected');
+                    }
+
+                    // Créer le contenu avec indication du statut
+                    let statusInfo = '';
+                    if (isUnavailable) {
+                        const statusLabels = {
+                            'formation': 'Formation',
+                            'conge': 'Congé',
+                            'maladie': 'Maladie',
+                            'unavailable': 'Indisponible'
+                        };
+                        statusInfo = `<div class="member-status-unavailable">${statusLabels[interim.status] || 'Indisponible'}</div>`;
+                    }
+
+                    interimDiv.innerHTML = `
+                        <div class="member-name">${interim.name}</div>
+                        <div class="member-role ${interim.type}">${interim.role}</div>
+                        ${statusInfo}
+                    `;
+
+                    teamList.appendChild(interimDiv);
+                });
+            }
+
+            // Section Sous-traitants
+            if (contractors.length > 0) {
+                const sectionTitle = document.createElement('div');
+                sectionTitle.className = 'section-title';
+                sectionTitle.textContent = '🏢 Sous-traitants';
+                teamList.appendChild(sectionTitle);
+
+                contractors.forEach((contractor, index) => {
+                    const contractorDiv = document.createElement('div');
+                    contractorDiv.className = 'team-member contractor-member';
+                    contractorDiv.dataset.index = index;
+                    contractorDiv.dataset.type = 'contractor';
+
+                    // Vérifier si le sous-traitant est indisponible
+                    const isUnavailable = contractor.status && ['formation', 'conge', 'maladie', 'unavailable'].includes(contractor.status);
+                    
+                    if (isUnavailable) {
+                        // Sous-traitant indisponible - pas de sélection possible
+                        contractorDiv.classList.add('team-member-unavailable');
+                        contractorDiv.onclick = null; // Pas de clic possible
+                    } else {
+                        // Sous-traitant disponible - sélection possible avec nombre de personnes
+                        contractorDiv.onclick = () => selectContractorWithCount(index, 'contractor');
+                    }
+
+                    // Vérifier si le sous-traitant est affecté toute la semaine (seulement pour les sous-traitants disponibles)
+                    const isWeeklyAffected = !isUnavailable && currentWeek ? checkWeeklyAffectation(contractor.name, currentWeek) : false;
+                    const isAffected = !isUnavailable && currentWeek ? checkIfMemberAffected(contractor.name, currentWeek) : false;
+                    
+                    if (isWeeklyAffected) {
+                        contractorDiv.classList.add('team-member-weekly');
+                    } else if (currentWeek && !isAffected && !isUnavailable) {
+                        contractorDiv.classList.add('team-member-not-affected');
+                    }
+
+                    // Créer le contenu avec indication du statut
+                    let statusInfo = '';
+                    if (isUnavailable) {
+                        const statusLabels = {
+                            'formation': 'Formation',
+                            'conge': 'Congé',
+                            'maladie': 'Maladie',
+                            'unavailable': 'Indisponible'
+                        };
+                        statusInfo = `<div class="member-status-unavailable">${statusLabels[contractor.status] || 'Indisponible'}</div>`;
+                    }
+
+                    contractorDiv.innerHTML = `
+                        <div class="member-name">${contractor.name}</div>
+                        <div class="member-role ${contractor.type}">${contractor.role}</div>
+                        ${statusInfo}
+                    `;
+
+                    teamList.appendChild(contractorDiv);
+                });
+            }
+        }
+
+        // Générer la grille des chantiers
+        function generateChantierGrid() {
+            const chantierGrid = document.getElementById('chantierGrid');
+            chantierGrid.innerHTML = '';
+
+            chantiers.forEach((chantier, index) => {
+                const chantierDiv = document.createElement('div');
+                chantierDiv.className = 'chantier-item';
+                chantierDiv.dataset.chantier = chantier;
+                chantierDiv.onclick = () => selectChantier(chantier);
+
+                chantierDiv.innerHTML = `
+                    <div class="chantier-name">${chantier}</div>
+                `;
+
+                chantierGrid.appendChild(chantierDiv);
+            });
+        }
+
+        // Générer le sélecteur de semaines
+        function generateWeekSelector() {
+            const weekSelect = document.getElementById('weekSelect');
+            const currentDate = new Date();
+            const currentWeek = getWeekNumber(currentDate);
+
+            for (let i = -4; i <= 8; i++) {
+                const weekDate = new Date(currentDate);
+                weekDate.setDate(currentDate.getDate() + (i * 7));
+                const weekNum = getWeekNumber(weekDate);
+                const year = weekDate.getFullYear();
+
+                const option = document.createElement('option');
+                option.value = `${year}-W${weekNum}`;
+                option.textContent = `Semaine ${weekNum} - ${year}`;
+                
+                if (i === 0) {
+                    option.selected = true;
+                }
+
+                weekSelect.appendChild(option);
+            }
+        }
+
+        // Obtenir le numéro de semaine
+        function getWeekNumber(date) {
+            const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+            const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+            return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        }
+
+        // Obtenir la date de début de la semaine
+        function getWeekStartDate(weekString) {
+            const [year, weekNum] = weekString.split('-W');
+            const yearNum = parseInt(year);
+            const week = parseInt(weekNum);
+            
+            // Calculer le premier jour de l'année
+            const firstDayOfYear = new Date(yearNum, 0, 1);
+            const firstMonday = new Date(firstDayOfYear);
+            
+            // Trouver le premier lundi de l'année
+            const dayOfWeek = firstDayOfYear.getDay();
+            const daysToMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+            firstMonday.setDate(firstDayOfYear.getDate() + daysToMonday);
+            
+            // Si le premier lundi est après le 4 janvier, c'est la semaine 1 de l'année suivante
+            if (firstMonday.getDate() > 4) {
+                firstMonday.setDate(firstMonday.getDate() - 7);
+            }
+            
+            // Calculer la date de début de la semaine demandée
+            const weekStartDate = new Date(firstMonday);
+            weekStartDate.setDate(firstMonday.getDate() + (week - 1) * 7);
+            
+            return weekStartDate;
+        }
+
+        // Basculer la sélection d'un membre
+        function toggleMemberSelection(index, type = 'member') {
+            const memberDiv = document.querySelector(`[data-index="${index}"][data-type="${type}"]`);
+            const memberKey = `${type}-${index}`;
+            const memberIndex = selectedMembers.indexOf(memberKey);
+
+            if (memberIndex > -1) {
+                selectedMembers.splice(memberIndex, 1);
+                memberDiv.classList.remove('selected');
+            } else {
+                selectedMembers.push(memberKey);
+                memberDiv.classList.add('selected');
+            }
+            
+            // Mettre à jour le compteur de sélection
+            updateSelectionCounter();
+        }
+
+        // Sélectionner un intérimaire avec nombre de personnes
+        function selectInterimWithCount(index, type = 'interim') {
+            const interimDiv = document.querySelector(`[data-index="${index}"][data-type="${type}"]`);
+            const interimKey = `${type}-${index}`;
+            const memberIndex = selectedMembers.findIndex(member => member.startsWith(interimKey));
+
+            if (memberIndex > -1) {
+                // Désélectionner
+                selectedMembers.splice(memberIndex, 1);
+                interimDiv.classList.remove('selected');
+            } else {
+                // Demander le nombre de personnes
+                const interim = interims[index];
+                const count = prompt(`Combien de personnes pour ${interim.name} ?`, '1');
+                
+                if (count && !isNaN(count) && parseInt(count) > 0) {
+                    const memberKey = `${interimKey}-${count}`;
+                    selectedMembers.push(memberKey);
+                    interimDiv.classList.add('selected');
+                }
+            }
+            
+            // Mettre à jour le compteur de sélection
+            updateSelectionCounter();
+        }
+
+        // Sélectionner un sous-traitant avec nombre de personnes
+        function selectContractorWithCount(index, type = 'contractor') {
+            const contractorDiv = document.querySelector(`[data-index="${index}"][data-type="${type}"]`);
+            const contractorKey = `${type}-${index}`;
+            const memberIndex = selectedMembers.findIndex(member => member.startsWith(contractorKey));
+
+            if (memberIndex > -1) {
+                // Désélectionner
+                selectedMembers.splice(memberIndex, 1);
+                contractorDiv.classList.remove('selected');
+            } else {
+                // Demander le nombre de personnes
+                const contractor = contractors[index];
+                const count = prompt(`Combien de personnes pour ${contractor.name} ?`, '1');
+                
+                if (count && !isNaN(count) && parseInt(count) > 0) {
+                    const memberKey = `${contractorKey}-${count}`;
+                    selectedMembers.push(memberKey);
+                    contractorDiv.classList.add('selected');
+                }
+            }
+            
+            // Mettre à jour le compteur de sélection
+            updateSelectionCounter();
+        }
+
+        // Mettre à jour le compteur de sélection
+        function updateSelectionCounter() {
+            const counter = document.getElementById('selectionCounter');
+            const count = document.getElementById('selectedCount');
+            
+            if (selectedMembers.length > 0) {
+                counter.style.display = 'inline-block';
+                count.textContent = selectedMembers.length;
+            } else {
+                counter.style.display = 'none';
+            }
+        }
+
+        // Sélectionner tous les membres
+        function selectAllMembers() {
+            selectedMembers = [];
+            teamMembers.forEach((member, index) => {
+                selectedMembers.push(index);
+                const memberDiv = document.querySelector(`[data-index="${index}"]`);
+                if (memberDiv) {
+                memberDiv.classList.add('selected');
+            }
+            });
+            updateSelectionCounter();
+        }
+
+        // Désélectionner tous les membres
+        function deselectAllMembers() {
+            selectedMembers = [];
+            document.querySelectorAll('.team-member').forEach(item => {
+                item.classList.remove('selected');
+            });
+            updateSelectionCounter();
+        }
+
+        // Sélectionner un chantier
+        function selectChantier(chantier) {
+            // Désélectionner tous les chantiers
+            document.querySelectorAll('.chantier-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // Sélectionner le chantier cliqué
+            document.querySelector(`[data-chantier="${chantier}"]`).classList.add('selected');
+            selectedChantier = chantier;
+        }
+
+        // Gestion de la sélection des jours
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('day-item')) {
+                const day = e.target.dataset.day;
+                const dayIndex = selectedDays.indexOf(day);
+
+                if (dayIndex > -1) {
+                    selectedDays.splice(dayIndex, 1);
+                    e.target.classList.remove('selected');
+                } else {
+                    selectedDays.push(day);
+                    e.target.classList.add('selected');
+                }
+            }
+        });
+
+        // Affecter les sélections
+        function assignSelected() {
+            if (selectedMembers.length === 0) {
+                alert('Veuillez sélectionner au moins un membre d\'équipe.');
+                return;
+            }
+
+            if (!selectedChantier) {
+                alert('Veuillez sélectionner un chantier.');
+                return;
+            }
+
+            if (selectedDays.length === 0) {
+                alert('Veuillez sélectionner au moins un jour.');
+                return;
+            }
+
+            const currentWeek = document.getElementById('weekSelect').value;
+            
+            if (!planningData[currentWeek]) {
+                planningData[currentWeek] = {};
+            }
+
+            selectedDays.forEach(day => {
+                const dayKey = getDayKey(day);
+                console.log('Traitement du jour:', day, '->', dayKey);
+                if (!planningData[currentWeek][dayKey]) {
+                    planningData[currentWeek][dayKey] = [];
+                }
+
+                selectedMembers.forEach(memberKey => {
+                    const parts = memberKey.split('-');
+                    const type = parts[0];
+                    const index = parseInt(parts[1]);
+                    const count = parts[2] || '1'; // Nombre de personnes pour les sous-traitants
+                    
+                    const member = type === 'member' ? teamMembers[index] : 
+                                  type === 'interim' ? interims[index] : 
+                                  contractors[index];
+                    const affectation = {
+                        name: member.name,
+                        role: member.role,
+                        type: member.type,
+                        chantier: selectedChantier,
+                        count: count // Ajouter le nombre de personnes
+                    };
+
+                    // Pour les intérimaires et sous-traitants, permettre plusieurs affectations le même jour
+                    // Pour les autres membres, remplacer l'affectation existante
+                    if (type === 'interim' || type === 'contractor') {
+                        // Intérimaires et sous-traitants : ajouter l'affectation (peut être sur plusieurs chantiers)
+                        planningData[currentWeek][dayKey].push(affectation);
+                        console.log(type === 'interim' ? 'Intérimaire ajouté:' : 'Sous-traitant ajouté:', 
+                                   affectation.name, 'sur', affectation.chantier, 'le', dayKey);
+                    } else {
+                        // Membre d'équipe : remplacer l'affectation existante
+                        // Supprimer toutes les affectations existantes pour ce membre ce jour
+                        const beforeCount = planningData[currentWeek][dayKey].length;
+                        planningData[currentWeek][dayKey] = planningData[currentWeek][dayKey].filter(
+                            a => a.name !== member.name
+                        );
+                        const afterFilterCount = planningData[currentWeek][dayKey].length;
+                        // Ajouter la nouvelle affectation
+                        planningData[currentWeek][dayKey].push(affectation);
+                        console.log('Membre d\'équipe affecté:', affectation.name, 'sur', affectation.chantier, 'le', dayKey, 
+                                   '(supprimé', beforeCount - afterFilterCount, 'affectations existantes)');
+                    }
+                });
+            });
+
+            savePlanningData();
+            
+            // Debug: afficher les données sauvegardées
+            console.log('Données sauvegardées pour la semaine', currentWeek, ':', planningData[currentWeek]);
+            
+            // Mettre à jour immédiatement le tableau
+            updateWeekPlanning();
+            console.log('Tableau mis à jour après affectation');
+            
+            // Forcer un re-rendu si nécessaire
+            setTimeout(() => {
+                updateWeekPlanning();
+                console.log('Re-rendu forcé du tableau');
+            }, 100);
+            
+            // Sauvegarder les valeurs pour le message
+            const membersCount = selectedMembers.length;
+            const chantierName = selectedChantier;
+            const daysCount = selectedDays.length;
+            
+            // Remettre à 0 automatiquement après affectation (sans confirmation)
+            selectedMembers = [];
+            selectedChantier = null;
+            selectedDays = [];
+
+            document.querySelectorAll('.team-member').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            document.querySelectorAll('.chantier-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            document.querySelectorAll('.day-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            updateSelectionCounter();
+
+            alert(`Affectation réussie : ${membersCount} membre(s) affecté(s) au chantier "${chantierName}" pour ${daysCount} jour(s).`);
+        }
+
+        // Obtenir la clé du jour
+        function getDayKey(day) {
+            const dayMap = {
+                'L': 'lundi',
+                'M': 'mardi',
+                'M2': 'mercredi',
+                'J': 'jeudi',
+                'V': 'vendredi',
+                'S': 'samedi',
+                'D': 'dimanche'
+            };
+            return dayMap[day];
+        }
+
+        // Fonction d'impression du planning hebdomadaire
+        function printPlanning() {
+            const currentWeek = document.getElementById('weekSelect').value;
+            const weekStartDate = getWeekStartDate(currentWeek);
+            const weekEndDate = new Date(weekStartDate);
+            weekEndDate.setDate(weekStartDate.getDate() + 6);
+            
+            // Créer un titre et des informations pour l'impression
+            const planningTitle = document.createElement('div');
+            planningTitle.className = 'planning-title';
+            planningTitle.textContent = `PLANNING PZO SEMAINE ${currentWeek}`;
+            
+            const weekInfo = document.createElement('div');
+            weekInfo.className = 'week-info';
+            weekInfo.textContent = `${weekStartDate.toLocaleDateString('fr-FR')} - ${weekEndDate.toLocaleDateString('fr-FR')}`;
+            
+            // Insérer le titre et les infos avant le tableau
+            const planningSection = document.querySelector('.planning-section');
+            const tableContainer = document.querySelector('.planning-table-container');
+            
+            // Supprimer les anciens titres s'ils existent
+            const existingTitle = planningSection.querySelector('.planning-title');
+            const existingInfo = planningSection.querySelector('.week-info');
+            if (existingTitle) existingTitle.remove();
+            if (existingInfo) existingInfo.remove();
+            
+            // Insérer les nouveaux titres
+            planningSection.insertBefore(weekInfo, tableContainer);
+            planningSection.insertBefore(planningTitle, weekInfo);
+            
+            // Lancer l'impression
+            window.print();
+            
+            // Nettoyer après impression (optionnel)
+            setTimeout(() => {
+                if (existingTitle) planningSection.insertBefore(existingTitle, tableContainer);
+                if (existingInfo) planningSection.insertBefore(existingInfo, tableContainer);
+            }, 1000);
+        }
+
+        // Remettre à 0 la sélection et vider le tableau
+        function resetSelection() {
+            if (confirm('Êtes-vous sûr de vouloir remettre à 0 toutes les sélections ET vider le tableau du planning ?\n\nCela effacera :\n- Les membres sélectionnés\n- Le chantier sélectionné\n- Les jours sélectionnés\n- TOUTES les affectations de la semaine courante\n\n⚠️ Cette action est irréversible !')) {
+                // Remettre à 0 les sélections
+            selectedMembers = [];
+            selectedChantier = null;
+            selectedDays = [];
+
+            document.querySelectorAll('.team-member').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            document.querySelectorAll('.chantier-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            document.querySelectorAll('.day-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+                
+                // Vider le tableau du planning pour la semaine courante
+                const currentWeek = document.getElementById('weekSelect').value;
+                if (planningData[currentWeek]) {
+                    delete planningData[currentWeek];
+                }
+                
+                // Sauvegarder les données vides
+                savePlanningData();
+                
+                // Mettre à jour l'affichage
+                updateWeekPlanning();
+                updateSelectionCounter();
+                
+                // Message de confirmation
+                alert('✅ Remise à 0 complète réussie !\n\n- Sélections effacées\n- Tableau du planning vidé\n- Données sauvegardées');
+            }
+        }
+
+        // NOUVEAU TABLEAU - Nombre de chantiers ILLIMITÉ
+        function updateWeekPlanning() {
+            const currentWeek = document.getElementById('weekSelect').value;
+            const table = document.getElementById('planningTable');
+            
+            console.log('🚀 CRÉATION NOUVEAU TABLEAU ILLIMITÉ pour la semaine', currentWeek);
+            
+            // Mettre à jour la liste des membres
+            generateTeamList();
+
+            // 1. Collecter TOUS les chantiers (SANS AUCUNE LIMITE)
+            const allChantiers = new Set();
+            if (planningData[currentWeek]) {
+                Object.values(planningData[currentWeek]).forEach(dayAffectations => {
+                    dayAffectations.forEach(affectation => {
+                        allChantiers.add(affectation.chantier);
+                    });
+                });
+            }
+            
+            const chantiersList = Array.from(allChantiers);
+            console.log('📊 CHANTIERS DÉTECTÉS:', chantiersList.length, chantiersList);
+
+            // 2. DÉTRUIRE et RECRÉER le tableau de zéro
+            table.innerHTML = '';
+            table.className = '';
+            table.removeAttribute('class');
+            table.style.cssText = '';
+            
+            // 3. Construire le tableau HTML complet
+            let tableHTML = '';
+            
+            // === EN-TÊTE ===
+            tableHTML += '<thead>';
+            
+            // Première ligne : Jours et Chantiers
+            tableHTML += '<tr>';
+            tableHTML += '<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold; min-width: 100px;">JOUR</th>';
+            
+            // Ajouter UNE colonne pour CHAQUE chantier (ILLIMITÉ)
+            chantiersList.forEach((chantier, index) => {
+                console.log(`➕ Colonne ${index + 1}: ${chantier}`);
+                tableHTML += `<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold; min-width: 120px; text-align: center;">${chantier}</th>`;
+            });
+            
+            if (chantiersList.length === 0) {
+                tableHTML += '<th style="background: #dc2626; color: white; padding: 8px; font-weight: bold;">AUCUNE AFFECTATION</th>';
+            }
+            
+            tableHTML += '</tr>';
+            
+            // Deuxième ligne : Statuts des chantiers
+            tableHTML += '<tr>';
+            tableHTML += '<th style="background: #f59e0b; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">STATUT</th>';
+            
+            // Ajouter une liste déroulante pour chaque chantier
+            chantiersList.forEach((chantier, index) => {
+                tableHTML += `<th style="background: #f59e0b; color: white; padding: 8px; text-align: center; min-width: 120px;">
+                    <select class="chantier-status" data-chantier="${chantier}" style="width: 100%; font-size: 14px; font-weight: bold; padding: 4px; border: none; background: white; color: #333; border-radius: 3px;">
+                        <option value="">-- Statut --</option>
+                        <option value="demarrage">🚀 DÉMARRAGE</option>
+                        <option value="nettoyage">🧹 NETTOYAGE</option>
+                        <option value="replis">📦 REPLIS</option>
+                        <option value="intemperis">🌧️ INTEMPÉRIS</option>
+                        <option value="reunion">👥 RÉUNION</option>
+                        <option value="prise-cotes">📏 PRISE DE CÔTES</option>
+                        <option value="reporter">⏰ REPORTER</option>
+                        <option value="annule">❌ ANNULÉ</option>
+                        <option value="reprises-reserves">🔄 REPRISES RÉSERVES</option>
+                        <option value="chantier-stope">🛑 CHANTIER STOPÉ</option>
+                        <option value="amiantes">⚠️ AMIANTES</option>
+                        <option value="plomb">🔧 PLOMB</option>
+                        <option value="autres">📋 AUTRES</option>
+                    </select>
+                </th>`;
+            });
+            
+            if (chantiersList.length === 0) {
+                tableHTML += '<th style="background: #f59e0b; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">STATUT</th>';
+            }
+            
+            tableHTML += '</tr>';
+            
+            // Troisième ligne : Commentaires des chantiers
+            tableHTML += '<tr>';
+            tableHTML += '<th style="background: #059669; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">COMMENTAIRE</th>';
+            
+            // Ajouter une zone de texte pour chaque chantier
+            chantiersList.forEach((chantier, index) => {
+                tableHTML += `<th style="background: #059669; color: white; padding: 8px; text-align: center; min-width: 120px;">
+                    <textarea class="chantier-comment" data-chantier="${chantier}" placeholder="Commentaire..." style="width: 100%; font-size: 12px; padding: 4px; border: none; background: white; color: #333; border-radius: 3px; resize: none; min-height: 40px; max-height: 200px; overflow: hidden; line-height: 1.4;"></textarea>
+                </th>`;
+            });
+            
+            if (chantiersList.length === 0) {
+                tableHTML += '<th style="background: #059669; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">COMMENTAIRE</th>';
+            }
+            
+            tableHTML += '</tr>';
+            
+            // Quatrième ligne : Documents/Photos avec QR Code
+            tableHTML += '<tr>';
+            tableHTML += '<th style="background: #7c3aed; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">DOCUMENTS/PHOTOS</th>';
+            
+            // Ajouter une zone pour documents/photos et QR code pour chaque chantier
+            chantiersList.forEach((chantier, index) => {
+                tableHTML += `<th style="background: #7c3aed; color: white; padding: 8px; text-align: center; min-width: 120px;">
+                    <div class="qr-generator-section" data-chantier="${chantier}" style="display: flex; flex-direction: column; gap: 4px;">
+                        <input type="file" class="image-upload" data-chantier="${chantier}" accept="image/*" style="font-size: 8px; padding: 2px; border: 1px solid #ccc; border-radius: 3px; width: 100%;">
+                        <button class="onedrive-qr-btn" data-chantier="${chantier}" style="font-size: 9px; padding: 2px 4px; border: none; background: #0078d4; color: white; border-radius: 3px; cursor: pointer; width: 100%;">OneDrive QR</button>
+                        <button class="delete-qr-btn" data-chantier="${chantier}" style="font-size: 9px; padding: 2px 4px; border: none; background: #dc2626; color: white; border-radius: 3px; cursor: pointer; width: 100%; display: none;">Supprimer</button>
+                        <div class="qr-display" data-chantier="${chantier}" style="min-height: 20px; display: flex; justify-content: center; align-items: center;"></div>
+                    </div>
+                </th>`;
+            });
+            
+            if (chantiersList.length === 0) {
+                tableHTML += '<th style="background: #7c3aed; color: white; padding: 8px; font-weight: bold; min-width: 100px; text-align: center;">DOCUMENTS/PHOTOS</th>';
+            }
+            
+            tableHTML += '</tr>';
+            tableHTML += '</thead>';
+            
+            // === CORPS DU TABLEAU ===
+            tableHTML += '<tbody>';
+            
+                const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+            const hasWeekendAffectations = days.slice(5).some(day => 
+                planningData[currentWeek] && planningData[currentWeek][day] && planningData[currentWeek][day].length > 0
+            );
+            const daysToShow = hasWeekendAffectations ? days : days.slice(0, 5);
+            
+            // Gérer la classe weekend
+            if (!hasWeekendAffectations) {
+                table.classList.add('hide-weekend');
+            } else {
+                table.classList.remove('hide-weekend');
+            }
+
+            // === LIGNES DES JOURS ===
+            daysToShow.forEach(day => {
+                const weekStartDate = getWeekStartDate(currentWeek);
+                const dayIndex = days.indexOf(day);
+                const dayDate = new Date(weekStartDate);
+                dayDate.setDate(weekStartDate.getDate() + dayIndex);
+                const formattedDate = dayDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+                
+                // Ligne du jour
+                tableHTML += `<tr>`;
+                tableHTML += `<td style="background: #f8f9fa; color: #dc2626; font-weight: bold; padding: 8px; text-align: center; border: 1px solid #dee2e6;">${day.charAt(0).toUpperCase() + day.slice(1)} ${formattedDate}</td>`;
+
+                // === CELLULES POUR CHAQUE CHANTIER ===
+                chantiersList.forEach(chantier => {
+                    let cellHTML = '';
+
+                    if (planningData[currentWeek] && planningData[currentWeek][day]) {
+                        const chantierAffectations = planningData[currentWeek][day].filter(
+                            a => a.chantier === chantier
+                        );
+
+                        chantierAffectations.forEach((affectation, index) => {
+                            const member = teamMembers.find(m => m.name === affectation.name) || 
+                                          interims.find(i => i.name === affectation.name) || 
+                                          contractors.find(c => c.name === affectation.name);
+                            
+                            const isUnavailable = member && member.status && 
+                                ['formation', 'conge', 'maladie', 'unavailable'].includes(member.status);
+                            
+                            const employeeType = member ? member.employeeType : 'employee';
+                            let bgColor = '#dc2626'; // Rouge par défaut
+                            let textColor = 'white';
+                            
+                            switch(employeeType) {
+                                case 'employee': bgColor = '#dc2626'; textColor = 'white'; break;
+                                case 'interimaire': bgColor = '#2563eb'; textColor = 'white'; break;
+                                case 'altrad-autres': bgColor = '#7c3aed'; textColor = 'white'; break;
+                                case 'contractor': bgColor = '#fbbf24'; textColor = '#000'; break;
+                            }
+                            
+                            if (isUnavailable) {
+                                bgColor = '#fbbf24';
+                                textColor = '#000';
+                            }
+                            
+                            const margin = index < chantierAffectations.length - 1 ? 'margin-bottom: 4px;' : '';
+                            
+                            if (isUnavailable) {
+                                const statusLabels = {
+                                    'formation': 'Formation',
+                                    'conge': 'Congé',
+                                    'maladie': 'Maladie',
+                                    'unavailable': 'Indisponible'
+                                };
+                                cellHTML += `<div style="background: ${bgColor}; color: ${textColor}; padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}">
+                                    <div>${affectation.name}</div>
+                                    <div style="font-size: 10px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
+                                </div>`;
+                            } else {
+                                if (affectation.count && affectation.count !== '1') {
+                                    cellHTML += `<div style="background: ${bgColor}; color: ${textColor}; padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}">
+                                        <div>${affectation.name}</div>
+                                        <div style="font-size: 10px; font-style: italic;">(${affectation.count} personnes)</div>
+                                    </div>`;
+                                } else {
+                                    cellHTML += `<div style="background: ${bgColor}; color: ${textColor}; padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}">
+                                        ${affectation.name}
+                                    </div>`;
+                                }
+                            }
+                        });
+                    }
+                    
+                    tableHTML += `<td style="padding: 8px; border: 1px solid #dee2e6; vertical-align: top; min-width: 120px;">${cellHTML}</td>`;
+                });
+
+                if (chantiersList.length === 0) {
+                    tableHTML += '<td style="padding: 8px; border: 1px solid #dee2e6; color: #6c757d; text-align: center;">-</td>';
+                }
+
+                tableHTML += '</tr>';
+            });
+            
+            tableHTML += '</tbody>';
+            
+            // 4. INJECTER le tableau complet
+            table.innerHTML = tableHTML;
+            
+            // 5. FORCER les styles du tableau pour éviter les conflits CSS
+            table.style.width = 'auto';
+            table.style.minWidth = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.style.background = 'white';
+            table.style.borderRadius = '0.5rem';
+            table.style.overflow = 'visible';
+            table.style.tableLayout = 'auto';
+            
+            // 6. Mettre à jour l'attribut data-week pour l'impression
+            const planningSection = document.querySelector('.planning-section');
+            if (planningSection) {
+                planningSection.setAttribute('data-week', currentWeek);
+            }
+            
+            // 7. VÉRIFICATION FINALE
+            const finalHeaders = table.querySelectorAll('th');
+            const finalRows = table.querySelectorAll('tbody tr');
+            const finalCells = finalRows[0] ? finalRows[0].querySelectorAll('td') : [];
+            
+            console.log('✅ NOUVEAU TABLEAU CRÉÉ:');
+            console.log('📊 Chantiers:', chantiersList.length);
+            console.log('📅 Jours:', daysToShow.length);
+            console.log('🔍 En-têtes:', finalHeaders.length);
+            console.log('📋 Lignes:', finalRows.length);
+            console.log('📦 Cellules par ligne:', finalCells.length);
+            console.log('🎯 SUCCÈS: Tableau illimité fonctionnel!');
+            
+            // 8. Ajouter les gestionnaires d'événements pour les listes déroulantes et commentaires
+            setTimeout(() => {
+                const statusSelects = document.querySelectorAll('.chantier-status');
+                statusSelects.forEach(select => {
+                    select.addEventListener('change', function() {
+                        const chantier = this.getAttribute('data-chantier');
+                        const status = this.value;
+                        const currentWeek = document.getElementById('weekSelect').value;
+                        
+                        console.log(`📝 Statut changé pour ${chantier}: ${status}`);
+                        
+                        // Sauvegarder le statut
+                        if (!chantierStatusData[currentWeek]) {
+                            chantierStatusData[currentWeek] = {};
+                        }
+                        chantierStatusData[currentWeek][chantier] = status;
+                        
+                        // Sauvegarder dans le localStorage
+                        localStorage.setItem('chantierStatusData', JSON.stringify(chantierStatusData));
+                        
+                        // Mettre à jour l'affichage visuel
+                        updateChantierStatusDisplay(chantier, status);
+                    });
+                });
+                
+                // Gestionnaires d'événements pour les commentaires
+                const commentTextareas = document.querySelectorAll('.chantier-comment');
+                commentTextareas.forEach(textarea => {
+                    // Fonction de redimensionnement automatique
+                    const autoResize = () => {
+                        textarea.style.height = 'auto';
+                        textarea.style.height = Math.max(40, textarea.scrollHeight) + 'px';
+                    };
+                    
+                    // Redimensionner au chargement
+                    autoResize();
+                    
+                    textarea.addEventListener('input', function() {
+                        const chantier = this.getAttribute('data-chantier');
+                        const comment = this.value;
+                        const currentWeek = document.getElementById('weekSelect').value;
+                        
+                        console.log(`💬 Commentaire changé pour ${chantier}: ${comment}`);
+                        
+                        // Redimensionner automatiquement
+                        autoResize();
+                        
+                        // Sauvegarder le commentaire
+                        if (!chantierCommentData[currentWeek]) {
+                            chantierCommentData[currentWeek] = {};
+                        }
+                        chantierCommentData[currentWeek][chantier] = comment;
+                        
+                        // Sauvegarder dans le localStorage
+                        localStorage.setItem('chantierCommentData', JSON.stringify(chantierCommentData));
+                        
+                        // Mettre à jour l'affichage visuel
+                        updateChantierCommentDisplay(chantier, comment);
+                    });
+                });
+                
+                // Gestionnaires d'événements pour le nouveau générateur QR
+                const imageUploads = document.querySelectorAll('.image-upload');
+                const onedriveQrBtns = document.querySelectorAll('.onedrive-qr-btn');
+                const deleteQrBtns = document.querySelectorAll('.delete-qr-btn');
+                
+                // Event listener pour l'upload d'image
+                imageUploads.forEach(upload => {
+                    upload.addEventListener('change', function() {
+                        const chantier = this.getAttribute('data-chantier');
+                        const file = this.files[0];
+                        
+                        if (file && file.type.startsWith('image/')) {
+                            console.log(`📸 Image uploadée pour ${chantier}: ${file.name}`);
+                            displayUploadedImage(chantier, file);
+                        } else {
+                            console.log(`❌ Fichier invalide pour ${chantier}`);
+                            alert('Veuillez sélectionner un fichier image valide');
+                        }
+                    });
+                });
+                
+                
+                // Event listener pour générer le QR code OneDrive
+                onedriveQrBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const chantier = this.getAttribute('data-chantier');
+                        console.log(`☁️ Clic bouton OneDrive pour ${chantier}`);
+                        generateOneDriveQR(chantier);
+                    });
+                });
+                
+                // Event listener pour supprimer le QR code
+                deleteQrBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const chantier = this.getAttribute('data-chantier');
+                        console.log(`🗑️ Suppression QR pour ${chantier}`);
+                        deleteQRCode(chantier);
+                    });
+                });
+                
+                
+                // Charger les statuts, commentaires et QR codes sauvegardés
+                loadChantierStatuses(currentWeek);
+                loadChantierComments(currentWeek);
+                loadChantierQRCodes(currentWeek);
+            }, 100);
+        }
+
+        // Variables pour les statuts des chantiers
+        let chantierStatusData = {};
+        
+        // Variables pour les commentaires des chantiers
+        let chantierCommentData = {};
+        
+
+        // Charger les statuts des chantiers depuis le localStorage
+        function loadChantierStatuses(week) {
+            const saved = localStorage.getItem('chantierStatusData');
+            if (saved) {
+                chantierStatusData = JSON.parse(saved);
+            }
+            
+            if (chantierStatusData[week]) {
+                Object.keys(chantierStatusData[week]).forEach(chantier => {
+                    const select = document.querySelector(`select[data-chantier="${chantier}"]`);
+                    if (select) {
+                        select.value = chantierStatusData[week][chantier];
+                        updateChantierStatusDisplay(chantier, chantierStatusData[week][chantier]);
+                    }
+                });
+            }
+        }
+
+        // Mettre à jour l'affichage visuel du statut
+        function updateChantierStatusDisplay(chantier, status) {
+            const select = document.querySelector(`select[data-chantier="${chantier}"]`);
+            if (select) {
+                // Changer la couleur de fond selon le statut
+                const statusColors = {
+                    'demarrage': '#10b981', // Vert
+                    'nettoyage': '#3b82f6', // Bleu
+                    'replis': '#8b5cf6', // Violet
+                    'intemperis': '#06b6d4', // Cyan
+                    'reunion': '#f59e0b', // Orange
+                    'prise-cotes': '#84cc16', // Vert lime
+                    'reporter': '#f97316', // Orange foncé
+                    'annule': '#ef4444', // Rouge
+                    'reprises-reserves': '#6366f1', // Indigo
+                    'chantier-stope': '#dc2626', // Rouge foncé
+                    'amiantes': '#fbbf24', // Jaune
+                    'plomb': '#6b7280', // Gris
+                    'autres': '#9ca3af' // Gris clair
+                };
+                
+                if (status && statusColors[status]) {
+                    // Appliquer la couleur à la liste déroulante
+                    select.style.backgroundColor = statusColors[status];
+                    select.style.color = 'white';
+                    select.setAttribute('data-status-selected', 'true');
+                    
+                    // Appliquer la couleur à toute la colonne
+                    const columnIndex = Array.from(select.closest('tr').children).indexOf(select.closest('th'));
+                    const table = select.closest('table');
+                    const rows = table.querySelectorAll('tr');
+                    
+                    rows.forEach((row, rowIndex) => {
+                        const cell = row.children[columnIndex];
+                        if (cell) {
+                            if (rowIndex === 0) {
+                                // En-tête du chantier
+                                cell.style.backgroundColor = statusColors[status];
+                                cell.style.color = 'white';
+                            } else if (rowIndex === 1) {
+                                // Ligne de statut
+                                cell.style.backgroundColor = statusColors[status];
+                                cell.style.color = 'white';
+                            } else {
+                                // Cellules du corps du tableau
+                                cell.style.backgroundColor = statusColors[status] + '20'; // 20% d'opacité
+                                cell.style.color = '#333';
+                            }
+                        }
+                    });
+                } else {
+                    // Remettre les couleurs par défaut
+                    select.style.backgroundColor = 'white';
+                    select.style.color = '#333';
+                    select.removeAttribute('data-status-selected');
+                    
+                    // Remettre les couleurs par défaut de la colonne
+                    const columnIndex = Array.from(select.closest('tr').children).indexOf(select.closest('th'));
+                    const table = select.closest('table');
+                    const rows = table.querySelectorAll('tr');
+                    
+                    rows.forEach((row, rowIndex) => {
+                        const cell = row.children[columnIndex];
+                        if (cell) {
+                            if (rowIndex === 0) {
+                                // En-tête du chantier
+                                cell.style.backgroundColor = '#dc2626';
+                                cell.style.color = 'white';
+                            } else if (rowIndex === 1) {
+                                // Ligne de statut
+                                cell.style.backgroundColor = '#f59e0b';
+                                cell.style.color = 'white';
+                            } else {
+                                // Cellules du corps du tableau
+                                cell.style.backgroundColor = '';
+                                cell.style.color = '';
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        // Charger les commentaires des chantiers depuis le localStorage
+        function loadChantierComments(week) {
+            const saved = localStorage.getItem('chantierCommentData');
+            if (saved) {
+                chantierCommentData = JSON.parse(saved);
+            }
+            
+            if (chantierCommentData[week]) {
+                Object.keys(chantierCommentData[week]).forEach(chantier => {
+                    const textarea = document.querySelector(`textarea[data-chantier="${chantier}"]`);
+                    if (textarea) {
+                        textarea.value = chantierCommentData[week][chantier];
+                        updateChantierCommentDisplay(chantier, chantierCommentData[week][chantier]);
+                    }
+                });
+            }
+        }
+
+        // Mettre à jour l'affichage visuel du commentaire
+        function updateChantierCommentDisplay(chantier, comment) {
+            const textarea = document.querySelector(`textarea[data-chantier="${chantier}"]`);
+            if (textarea) {
+                // Ajuster automatiquement la hauteur du textarea
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.max(40, textarea.scrollHeight) + 'px';
+                
+                if (comment && comment.trim() !== '') {
+                    textarea.setAttribute('data-comment-filled', 'true');
+                    textarea.style.backgroundColor = '#f0f8ff';
+                    textarea.style.borderColor = '#059669';
+                } else {
+                    textarea.removeAttribute('data-comment-filled');
+                    textarea.style.backgroundColor = 'white';
+                    textarea.style.borderColor = 'var(--gray-300)';
+                }
+            }
+        }
+
+
+        // Fonction pour afficher directement l'image uploadée
+        function displayUploadedImage(chantier, imageFile) {
+            console.log(`📸 Affichage image pour ${chantier}: ${imageFile.name}`);
+            
+            const qrDisplay = document.querySelector(`.qr-display[data-chantier="${chantier}"]`);
+            if (!qrDisplay) {
+                console.error(`❌ Conteneur QR non trouvé pour ${chantier}`);
+                return;
+            }
+            
+            // Vider le conteneur
+            qrDisplay.innerHTML = '';
+            
+            // Créer un FileReader pour lire l'image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Créer l'élément image pour afficher l'image uploadée
+                const uploadedImage = document.createElement('img');
+                uploadedImage.src = e.target.result;
+                uploadedImage.style.maxWidth = '100%';
+                uploadedImage.style.maxHeight = '150px';
+                uploadedImage.style.border = '2px solid #000';
+                uploadedImage.style.borderRadius = '5px';
+                uploadedImage.style.display = 'block';
+                uploadedImage.style.margin = '0 auto';
+                uploadedImage.style.objectFit = 'contain';
+                uploadedImage.alt = `Image pour ${chantier}`;
+                
+                // Ajouter au conteneur
+                qrDisplay.appendChild(uploadedImage);
+                
+                // Marquer comme généré
+                qrDisplay.setAttribute('data-qr-generated', 'true');
+                
+                // Afficher le bouton de suppression
+                const deleteBtn = document.querySelector(`.delete-qr-btn[data-chantier="${chantier}"]`);
+                if (deleteBtn) {
+                    deleteBtn.style.display = 'block';
+                }
+                
+                // Sauvegarder
+                const currentWeek = document.getElementById('weekSelect').value;
+                if (!chantierQRData[currentWeek]) {
+                    chantierQRData[currentWeek] = {};
+                }
+                chantierQRData[currentWeek][chantier] = {
+                    fileName: imageFile.name,
+                    fileSize: imageFile.size,
+                    fileType: imageFile.type,
+                    timestamp: new Date().toISOString(),
+                    uploadedImageData: e.target.result,
+                    type: 'image'
+                };
+                localStorage.setItem('chantierQRData', JSON.stringify(chantierQRData));
+                
+                console.log('✅ Image affichée avec succès pour', chantier);
+            };
+            
+            // Lire le fichier image
+            reader.readAsDataURL(imageFile);
+        }
+
+        // NOUVEAU GÉNÉRATEUR QR AVEC AFFICHAGE DE L'IMAGE
+        function generateQRCodeFromImage(chantier, imageFile) {
+            console.log(`🔧 Génération QR pour ${chantier} avec image: ${imageFile.name}`);
+            
+            const qrDisplay = document.querySelector(`.qr-display[data-chantier="${chantier}"]`);
+            if (!qrDisplay) {
+                console.error(`❌ Conteneur QR non trouvé pour ${chantier}`);
+                return;
+            }
+            
+            // Vider le conteneur
+            qrDisplay.innerHTML = '';
+            
+            // Créer un FileReader pour lire l'image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Créer l'élément image pour afficher l'image uploadée
+                const uploadedImage = document.createElement('img');
+                uploadedImage.src = e.target.result;
+                uploadedImage.style.maxWidth = '100%';
+                uploadedImage.style.maxHeight = '150px';
+                uploadedImage.style.border = '2px solid #000';
+                uploadedImage.style.borderRadius = '5px';
+                uploadedImage.style.display = 'block';
+                uploadedImage.style.margin = '0 auto 5px auto';
+                uploadedImage.style.objectFit = 'contain';
+                uploadedImage.alt = `Image pour ${chantier}`;
+                
+                // Créer un canvas pour le QR code
+                const canvas = document.createElement('canvas');
+                canvas.width = 120;
+                canvas.height = 120;
+                canvas.style.border = '2px solid #000';
+                canvas.style.borderRadius = '5px';
+                canvas.style.backgroundColor = '#fff';
+                canvas.style.display = 'block';
+                canvas.style.margin = '0 auto';
+                canvas.style.maxWidth = '100%';
+                canvas.style.maxHeight = '80px';
+                
+                const ctx = canvas.getContext('2d');
+                
+                // Fond blanc
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, 120, 120);
+                
+                // Créer un hash basé sur le nom du fichier et du chantier
+                const dataString = `${chantier}_${imageFile.name}_${imageFile.size}`;
+                let hash = 0;
+                for (let i = 0; i < dataString.length; i++) {
+                    hash = ((hash << 5) - hash + dataString.charCodeAt(i)) & 0xffffffff;
+                }
+                
+                // Dessiner un motif QR simple
+                ctx.fillStyle = '#000000';
+                const cellSize = 6;
+                const cells = 20; // 120/6 = 20
+                
+                // Coins de repérage
+                const cornerSize = 3;
+                
+                // Coin supérieur gauche
+                ctx.fillRect(0, 0, cornerSize * cellSize, cornerSize * cellSize);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(cellSize, cellSize, cellSize, cellSize);
+                ctx.fillStyle = '#000000';
+                
+                // Coin supérieur droit
+                ctx.fillRect((cells - cornerSize) * cellSize, 0, cornerSize * cellSize, cornerSize * cellSize);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect((cells - 2) * cellSize, cellSize, cellSize, cellSize);
+                ctx.fillStyle = '#000000';
+                
+                // Coin inférieur gauche
+                ctx.fillRect(0, (cells - cornerSize) * cellSize, cornerSize * cellSize, cornerSize * cellSize);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(cellSize, (cells - 2) * cellSize, cellSize, cellSize);
+                ctx.fillStyle = '#000000';
+                
+                // Motif central basé sur le hash
+                for (let x = 4; x < cells - 4; x++) {
+                    for (let y = 4; y < cells - 4; y++) {
+                        const seed = (hash + x * 7 + y * 11) % 100;
+                        if (seed < 40) {
+                            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                        }
+                    }
+                }
+                
+                // Ajouter le nom du chantier
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 7px Arial';
+                ctx.textAlign = 'center';
+                const chantierShort = chantier.length > 15 ? chantier.substring(0, 15) + '...' : chantier;
+                ctx.fillText(chantierShort, 60, 115);
+                
+                // Ajouter l'image et le QR code au conteneur
+                qrDisplay.appendChild(uploadedImage);
+                qrDisplay.appendChild(canvas);
+                
+                // Marquer comme généré
+                qrDisplay.setAttribute('data-qr-generated', 'true');
+                
+                // Afficher le bouton de suppression
+                const deleteBtn = document.querySelector(`.delete-qr-btn[data-chantier="${chantier}"]`);
+                if (deleteBtn) {
+                    deleteBtn.style.display = 'block';
+                }
+                
+                // Sauvegarder
+                const currentWeek = document.getElementById('weekSelect').value;
+                if (!chantierQRData[currentWeek]) {
+                    chantierQRData[currentWeek] = {};
+                }
+                chantierQRData[currentWeek][chantier] = {
+                    fileName: imageFile.name,
+                    fileSize: imageFile.size,
+                    fileType: imageFile.type,
+                    timestamp: new Date().toISOString(),
+                    imageData: canvas.toDataURL(),
+                    uploadedImageData: e.target.result
+                };
+                localStorage.setItem('chantierQRData', JSON.stringify(chantierQRData));
+                
+                console.log('✅ QR Code et image générés avec succès pour', chantier);
+            };
+            
+            // Lire le fichier image
+            reader.readAsDataURL(imageFile);
+        }
+
+        // Fonction pour générer un QR code OneDrive
+        function generateOneDriveQR(chantier) {
+            console.log(`☁️ Génération QR OneDrive pour ${chantier}`);
+            
+            // Demander le lien OneDrive
+            const oneDriveURL = prompt(`Entrez le lien OneDrive pour ${chantier}:\n\nExemple: https://1drv.ms/b/s!ABC123...`);
+            
+            if (!oneDriveURL || oneDriveURL.trim() === '') {
+                console.log('❌ Aucun lien OneDrive fourni');
+                return;
+            }
+            
+            // Vérifier que c'est bien un lien OneDrive
+            if (!oneDriveURL.includes('1drv.ms') && !oneDriveURL.includes('onedrive.live.com')) {
+                alert('⚠️ Veuillez entrer un lien OneDrive valide (1drv.ms ou onedrive.live.com)');
+                return;
+            }
+            
+            // Générer le QR code OneDrive
+            generateOneDriveQRCode(chantier, oneDriveURL);
+        }
+        
+        // Fonction pour générer le QR code OneDrive
+        function generateOneDriveQRCode(chantier, oneDriveURL) {
+            console.log(`☁️ Génération QR OneDrive pour ${chantier}`);
+            
+            const qrDisplay = document.querySelector(`.qr-display[data-chantier="${chantier}"]`);
+            if (!qrDisplay) {
+                console.error(`❌ Conteneur QR non trouvé pour ${chantier}`);
+                return;
+            }
+            
+            // Vider le conteneur
+            qrDisplay.innerHTML = '';
+            
+            // Créer le texte pour le QR code
+            const currentWeek = document.getElementById('weekSelect').value;
+            const qrText = `🏗️ CHANTIER: ${chantier}\n📅 SEMAINE: ${currentWeek}\n☁️ ONEDRIVE: ${oneDriveURL}\n📁 FICHIER: Document chantier`;
+            
+            // Créer un canvas pour le QR code
+            const canvas = document.createElement('canvas');
+            canvas.width = 120;
+            canvas.height = 120;
+            canvas.style.border = '2px solid #000';
+            canvas.style.borderRadius = '5px';
+            canvas.style.backgroundColor = '#fff';
+            canvas.style.display = 'block';
+            canvas.style.margin = '0 auto';
+            canvas.style.maxWidth = '100%';
+            canvas.style.maxHeight = '80px';
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Fond blanc
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, 120, 120);
+            
+            // Créer un hash basé sur le texte OneDrive
+            let hash = 0;
+            for (let i = 0; i < qrText.length; i++) {
+                hash = ((hash << 5) - hash + qrText.charCodeAt(i)) & 0xffffffff;
+            }
+            
+            // Dessiner un motif QR simple
+            ctx.fillStyle = '#000000';
+            const cellSize = 6;
+            const cells = 20; // 120/6 = 20
+            
+            // Coins de repérage
+            const cornerSize = 3;
+            
+            // Coin supérieur gauche
+            ctx.fillRect(0, 0, cornerSize * cellSize, cornerSize * cellSize);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(cellSize, cellSize, cellSize, cellSize);
+            ctx.fillStyle = '#000000';
+            
+            // Coin supérieur droit
+            ctx.fillRect((cells - cornerSize) * cellSize, 0, cornerSize * cellSize, cornerSize * cellSize);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect((cells - 2) * cellSize, cellSize, cellSize, cellSize);
+            ctx.fillStyle = '#000000';
+            
+            // Coin inférieur gauche
+            ctx.fillRect(0, (cells - cornerSize) * cellSize, cornerSize * cellSize, cornerSize * cellSize);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(cellSize, (cells - 2) * cellSize, cellSize, cellSize);
+            ctx.fillStyle = '#000000';
+            
+            // Motif central basé sur le hash
+            for (let x = 4; x < cells - 4; x++) {
+                for (let y = 4; y < cells - 4; y++) {
+                    const seed = (hash + x * 7 + y * 11) % 100;
+                    if (seed < 40) {
+                        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+            
+            // Ajouter le nom du chantier
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 7px Arial';
+            ctx.textAlign = 'center';
+            const chantierShort = chantier.length > 15 ? chantier.substring(0, 15) + '...' : chantier;
+            ctx.fillText(chantierShort, 60, 115);
+            
+            // Ajouter au conteneur
+            qrDisplay.appendChild(canvas);
+            
+            // Marquer comme généré
+            qrDisplay.setAttribute('data-qr-generated', 'true');
+            
+            // Afficher le bouton de suppression
+            const deleteBtn = document.querySelector(`.delete-qr-btn[data-chantier="${chantier}"]`);
+            if (deleteBtn) {
+                deleteBtn.style.display = 'block';
+            }
+            
+            // Sauvegarder
+            const currentWeekData = document.getElementById('weekSelect').value;
+            if (!chantierQRData[currentWeekData]) {
+                chantierQRData[currentWeekData] = {};
+            }
+            chantierQRData[currentWeekData][chantier] = {
+                oneDriveURL: oneDriveURL,
+                qrText: qrText,
+                timestamp: new Date().toISOString(),
+                imageData: canvas.toDataURL(),
+                type: 'onedrive'
+            };
+            localStorage.setItem('chantierQRData', JSON.stringify(chantierQRData));
+            
+            console.log('✅ QR Code OneDrive généré avec succès pour', chantier);
+        }
+
+
+
+        // Fonction pour supprimer un QR code
+        function deleteQRCode(chantier) {
+            console.log(`🗑️ Suppression QR code pour ${chantier}`);
+            
+            const qrDisplay = document.querySelector(`.qr-display[data-chantier="${chantier}"]`);
+            if (qrDisplay) {
+                qrDisplay.innerHTML = '';
+                qrDisplay.removeAttribute('data-qr-generated');
+            }
+            
+            // Cacher le bouton de suppression
+            const deleteBtn = document.querySelector(`.delete-qr-btn[data-chantier="${chantier}"]`);
+            if (deleteBtn) {
+                deleteBtn.style.display = 'none';
+            }
+            
+            // Réinitialiser l'upload
+            const upload = document.querySelector(`.image-upload[data-chantier="${chantier}"]`);
+            if (upload) {
+                upload.value = '';
+            }
+            
+            // Supprimer des données sauvegardées
+            const currentWeek = document.getElementById('weekSelect').value;
+            if (chantierQRData[currentWeek] && chantierQRData[currentWeek][chantier]) {
+                delete chantierQRData[currentWeek][chantier];
+                localStorage.setItem('chantierQRData', JSON.stringify(chantierQRData));
+            }
+            
+            console.log('✅ QR Code supprimé pour', chantier);
+        }
+
+
+
+        // Variables pour les QR codes des chantiers
+        let chantierQRData = {};
+
+        // Charger les QR codes des chantiers depuis le localStorage
+        function loadChantierQRCodes(week) {
+            const saved = localStorage.getItem('chantierQRData');
+            if (saved) {
+                chantierQRData = JSON.parse(saved);
+            }
+            
+            if (chantierQRData[week]) {
+                Object.keys(chantierQRData[week]).forEach(chantier => {
+                    const qrData = chantierQRData[week][chantier];
+                    if (qrData && qrData.imageData) {
+                        // Restaurer le QR code et l'image sauvegardés
+                        const qrDisplay = document.querySelector(`.qr-display[data-chantier="${chantier}"]`);
+                        const deleteBtn = document.querySelector(`.delete-qr-btn[data-chantier="${chantier}"]`);
+                        
+                        if (qrDisplay) {
+                            qrDisplay.innerHTML = '';
+                            
+                            // Restaurer l'image uploadée si elle existe
+                            if (qrData.uploadedImageData) {
+                                const uploadedImage = document.createElement('img');
+                                uploadedImage.src = qrData.uploadedImageData;
+                                uploadedImage.style.maxWidth = '100%';
+                                uploadedImage.style.maxHeight = '150px';
+                                uploadedImage.style.border = '2px solid #000';
+                                uploadedImage.style.borderRadius = '5px';
+                                uploadedImage.style.display = 'block';
+                                uploadedImage.style.margin = '0 auto 5px auto';
+                                uploadedImage.style.objectFit = 'contain';
+                                uploadedImage.alt = `Image pour ${chantier}`;
+                                qrDisplay.appendChild(uploadedImage);
+                            }
+                            
+                            // Restaurer le QR code
+                            const qrImg = document.createElement('img');
+                            qrImg.src = qrData.imageData;
+                            qrImg.style.maxWidth = '100%';
+                            qrImg.style.maxHeight = '80px';
+                            qrImg.style.border = '2px solid #000';
+                            qrImg.style.borderRadius = '5px';
+                            qrImg.style.display = 'block';
+                            qrImg.style.margin = '0 auto';
+                            qrDisplay.appendChild(qrImg);
+                            
+                            qrDisplay.setAttribute('data-qr-generated', 'true');
+                            
+                            // Afficher le bouton de suppression
+                            if (deleteBtn) {
+                                deleteBtn.style.display = 'block';
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Vérifier si un membre est affecté toute la semaine (lundi-vendredi)
+        function checkWeeklyAffectation(memberName, week) {
+            if (!planningData[week]) return false;
+            
+            const weekdays = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+            let affectedDays = 0;
+            
+            for (const day of weekdays) {
+                if (planningData[week][day]) {
+                    const memberAffectations = planningData[week][day].filter(
+                        a => a.name === memberName
+                    );
+                    
+                    if (memberAffectations.length > 0) {
+                        affectedDays++;
+                    }
+                }
+            }
+            
+            // Considéré comme affecté toute la semaine si affecté au moins 4 jours sur 5 (peu importe le chantier)
+            return affectedDays >= 4;
+        }
+
+        // Vérifier si un membre a au moins une affectation dans la semaine
+        function checkIfMemberAffected(memberName, week) {
+            if (!planningData[week]) return false;
+            
+            const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+            
+            for (const day of days) {
+                if (planningData[week][day]) {
+                    const memberAffectations = planningData[week][day].filter(
+                        a => a.name === memberName
+                    );
+                    
+                    if (memberAffectations.length > 0) {
+                        return true; // Le membre a au moins une affectation
+                    }
+                }
+            }
+            
+            return false; // Le membre n'a aucune affectation
+        }
+
+        // Sauvegarder les données de planning
+        function savePlanningData() {
+            localStorage.setItem('planning_affectations', JSON.stringify(planningData));
+            
+            // Synchroniser avec le système global
+            if (window.syncAffectations) {
+                window.syncAffectations(planningData);
+            }
+        }
+
+        // Charger les données de planning
+        function loadPlanningData() {
+            const saved = localStorage.getItem('planning_affectations');
+            if (saved) {
+                planningData = JSON.parse(saved);
+            }
+            
+            // Charger les données synchronisées
+            if (window.getSyncData) {
+                const syncData = window.getSyncData();
+                if (syncData.affectations && Object.keys(syncData.affectations).length > 0) {
+                    planningData = syncData.affectations;
+                }
+            }
+        }
+
+        // Imprimer le planning
+        function printPlanning() {
+            window.print();
+        }
+
+        // Écouter les changements de données
+        if (window.onDataChange) {
+            window.onDataChange((data) => {
+                if (data.affectations && Object.keys(data.affectations).length > 0) {
+                    planningData = data.affectations;
+                    updatePlanningTable();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
