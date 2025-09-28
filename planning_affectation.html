@@ -421,6 +421,7 @@
             font-weight: 600;
         }
 
+
         .chantier-content {
             display: flex;
             flex-direction: row;
@@ -1699,6 +1700,23 @@
             color: #d97706;
         }
 
+        /* Style spécial pour le conducteur de travaux */
+        .team-member.conducteur {
+            background: #000000;
+            color: #ffffff;
+            border: 2px solid #000000;
+        }
+
+        .team-member.conducteur .member-name {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .team-member.conducteur .member-role {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
         /* Style pour les membres Altrad autres */
         .team-member.altrad-autres {
             border: 2px solid #7c3aed; /* Violet pour Altrad autres */
@@ -2052,6 +2070,7 @@
     <script>
         // Données des membres d'équipe (par défaut, sera remplacée par les données synchronisées)
         const defaultTeamMembers = [
+            { name: "ERTUGRUL", role: "Conducteur de travaux", type: "conducteur", employeeType: "conducteur" },
             { name: "Aarab Mohamed", role: "Chef d'équipe 41", type: "chef" },
             { name: "Antunez Loic", role: "Chef d'équipe 41", type: "chef" },
             { name: "Blanc Marquis Domonique", role: "Opérateur 41", type: "operateur" },
