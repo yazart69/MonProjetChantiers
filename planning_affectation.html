@@ -2440,8 +2440,10 @@
                     }
 
                 // Ajouter l'emoji validé vert si affecté toute la semaine
-                const nameWithEmoji = isWeeklyAffected ? `${member.name} ✅` : member.name;
-                console.log('🎯 EMOJI DEBUG - Membre:', member.name, 'isWeeklyAffected:', isWeeklyAffected, 'nameWithEmoji:', nameWithEmoji);
+                // TEST: Forcer l'emoji pour ERTUGRUL pour debug
+                const forceEmoji = member.name === 'ERTUGRUL';
+                const nameWithEmoji = (isWeeklyAffected || forceEmoji) ? `${member.name} ✅` : member.name;
+                console.log('🎯 EMOJI DEBUG - Membre:', member.name, 'isWeeklyAffected:', isWeeklyAffected, 'forceEmoji:', forceEmoji, 'nameWithEmoji:', nameWithEmoji);
                 
                 memberDiv.innerHTML = `
                     <div class="member-name">${nameWithEmoji}</div>
@@ -2499,7 +2501,10 @@
                     }
 
                     // Ajouter l'emoji validé vert si affecté toute la semaine
-                    const nameWithEmoji = isWeeklyAffected ? `${interim.name} ✅` : interim.name;
+                    // TEST: Forcer l'emoji pour debug
+                    const forceEmoji = interim.name === 'NASSER MESSAL';
+                    const nameWithEmoji = (isWeeklyAffected || forceEmoji) ? `${interim.name} ✅` : interim.name;
+                    console.log('🎯 EMOJI DEBUG INTERIM - Membre:', interim.name, 'isWeeklyAffected:', isWeeklyAffected, 'forceEmoji:', forceEmoji, 'nameWithEmoji:', nameWithEmoji);
                     
                     interimDiv.innerHTML = `
                         <div class="member-name">${nameWithEmoji}</div>
