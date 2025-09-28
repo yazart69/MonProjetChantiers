@@ -55,7 +55,7 @@ class DataSyncManager {
                 members: [
                     { id: 1, name: 'Martin Hangard', role: 'Responsable d\'agence', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'martin.hangard@altrad.fr', skills: ['management', 'commercial', 'gestion'], experience: 15, chantierActuel: 'Direction', heuresSemaine: 42 },
                     { id: 2, name: 'Sylvain Garreau', role: 'Chargé d\'affaires', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'sylvain.garreau@altrad.fr', skills: ['commercial', 'devis', 'suivi-client'], experience: 10, chantierActuel: 'Commercial', heuresSemaine: 40 },
-                    { id: 3, name: 'Ertugrul', role: 'Conducteur de travaux', status: 'available', type: 'employee', phone: '06.12.34.56.78', email: 'ertugrul@altrad.fr', skills: ['management', 'planning', 'qualité'], experience: 8, chantierActuel: 'VICHY', heuresSemaine: 45 },
+                    { id: 3, name: 'ERTUGRUL', role: 'Conducteur de travaux', status: 'available', type: 'conducteur', employeeType: 'conducteur', phone: '06.12.34.56.78', email: 'ertugrul@altrad.fr', skills: ['management', 'planning', 'qualité'], experience: 8, chantierActuel: 'VICHY', heuresSemaine: 45 },
                     { id: 4, name: 'Lou Piedigrossi', role: 'HSE', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'lou.piedigrossi@altrad.fr', skills: ['sécurité', 'environnement', 'formation'], experience: 6, chantierActuel: 'Multi-sites', heuresSemaine: 38 },
                     { id: 5, name: 'A MOHAMED', role: 'Opérateur', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'a.mohamed@altrad.fr', skills: ['pistoleur', 'sableur'], experience: 4, chantierActuel: 'CAMPENON BERNARD', heuresSemaine: 37 },
                     { id: 6, name: 'ANTUNEZ LOIC', role: 'Chef d\'équipe', status: 'available', type: 'employee', phone: '06.XX.XX.XX.XX', email: 'loic.antunez@altrad.fr', skills: ['grenailleur', 'forme-amiante'], experience: 6, chantierActuel: 'EFFIA PARKING', heuresSemaine: 40 },
@@ -324,6 +324,57 @@ class DataSyncManager {
         this.initializeDefaultData();
         console.log('🔄 Toutes les données ont été réinitialisées');
     }
+
+    /**
+     * Nettoyer et synchroniser les données entre modules
+     */
+    cleanupAndSync() {
+        try {
+            console.log('🧹 Nettoyage et synchronisation des données...');
+            
+            // Vérifier et corriger les données d'équipe
+            const teamData = this.loadData('team');
+            if (teamData && teamData.members) {
+                teamData.members.forEach(member => {
+                    // S'assurer que employeeType est défini
+                    if (!member.employeeType) {
+                        member.employeeType = member.type || 'employee';
+                    }
+                    
+                    // Corriger ERTUGRUL spécifiquement
+                    if (member.name === 'ERTUGRUL' || member.name === 'Ertugrul') {
+                        member.name = 'ERTUGRUL';
+                        member.type = 'conducteur';
+                        member.employeeType = 'conducteur';
+                        member.role = 'Conducteur de travaux';
+                    }
+                });
+                
+                this.saveData('team', teamData);
+                console.log('✅ Données d\'équipe nettoyées et synchronisées');
+            }
+            
+            // Nettoyer les données d'affectations
+            const affectationsData = this.loadData('affectations');
+            if (affectationsData) {
+                // S'assurer que la structure est correcte
+                if (!affectationsData.planningData) {
+                    affectationsData.planningData = {};
+                }
+                if (!affectationsData.chantiers) {
+                    affectationsData.chantiers = [];
+                }
+                
+                this.saveData('affectations', affectationsData);
+                console.log('✅ Données d\'affectations nettoyées et synchronisées');
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Erreur lors du nettoyage des données:', error);
+            return false;
+        }
+    }
 }
 
 // Créer l'instance globale
@@ -359,6 +410,10 @@ window.importAllData = function(data) {
 
 window.resetAllData = function() {
     return window.dataSyncManager.resetAllData();
+};
+
+window.cleanupAndSync = function() {
+    return window.dataSyncManager.cleanupAndSync();
 };
 
 // Auto-sauvegarde périodique

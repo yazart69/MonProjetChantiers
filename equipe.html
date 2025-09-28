@@ -1987,6 +1987,11 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
+            // Nettoyer et synchroniser les données avant de charger
+            if (window.dataSyncManager) {
+                window.dataSyncManager.cleanupAndSync();
+            }
+            
             renderTeamMembers();
             renderContractors();
             generateAlerts();
