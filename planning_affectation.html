@@ -2052,6 +2052,8 @@
         let teamMembers = [];
         let interims = [];
         let contractors = [];
+        let selectedMembers = [];
+        let selectedDays = [];
         let selectedChantier = null;
         let planningData = {};
         let chantierImageData = {};
@@ -2499,16 +2501,26 @@
 
         // Basculer la sélection d'un membre
         function toggleMemberSelection(index, type = 'member') {
+            console.log('🔍 toggleMemberSelection appelé:', index, type);
             const memberDiv = document.querySelector(`[data-index="${index}"][data-type="${type}"]`);
+            console.log('🔍 Membre trouvé:', memberDiv);
+            
+            if (!memberDiv) {
+                console.error('❌ Membre non trouvé pour index:', index, 'type:', type);
+                return;
+            }
+            
             const memberKey = `${type}-${index}`;
             const memberIndex = selectedMembers.indexOf(memberKey);
 
             if (memberIndex > -1) {
                 selectedMembers.splice(memberIndex, 1);
                 memberDiv.classList.remove('selected');
+                console.log('✅ Membre désélectionné:', memberKey);
             } else {
                 selectedMembers.push(memberKey);
                 memberDiv.classList.add('selected');
+                console.log('✅ Membre sélectionné:', memberKey);
             }
             
             // Mettre à jour le compteur de sélection
@@ -2584,11 +2596,11 @@
         function selectAllMembers() {
             selectedMembers = [];
             teamMembers.forEach((member, index) => {
-                selectedMembers.push(index);
+                selectedMembers.push(`member-${index}`);
                 const memberDiv = document.querySelector(`[data-index="${index}"]`);
                 if (memberDiv) {
-                memberDiv.classList.add('selected');
-            }
+                    memberDiv.classList.add('selected');
+                }
             });
             updateSelectionCounter();
         }
@@ -2700,16 +2712,22 @@
         // Gestion de la sélection des jours
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('day-item')) {
+                console.log('🔍 Jour cliqué:', e.target);
                 const day = e.target.dataset.day;
+                console.log('🔍 Jour sélectionné:', day);
                 const dayIndex = selectedDays.indexOf(day);
 
                 if (dayIndex > -1) {
                     selectedDays.splice(dayIndex, 1);
                     e.target.classList.remove('selected');
+                    console.log('✅ Jour désélectionné:', day);
                 } else {
                     selectedDays.push(day);
                     e.target.classList.add('selected');
+                    console.log('✅ Jour sélectionné:', day);
                 }
+                
+                console.log('📅 Jours sélectionnés:', selectedDays);
             }
         });
 
@@ -3590,6 +3608,14 @@
         window.generateChantierGrid = generateChantierGrid;
         window.loadChantiersList = loadChantiersList;
         window.printPlanning = printPlanning;
+        window.toggleMemberSelection = toggleMemberSelection;
+        window.selectInterimWithCount = selectInterimWithCount;
+        window.selectContractorWithCount = selectContractorWithCount;
+        window.selectAllMembers = selectAllMembers;
+        window.deselectAllMembers = deselectAllMembers;
+        window.selectChantier = selectChantier;
+        window.assignSelected = assignSelected;
+        window.resetSelection = resetSelection;
         // Variables pour les statuts des chantiers
         let chantierStatusData = {};
         let chantierCommentData = {};
