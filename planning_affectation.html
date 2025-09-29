@@ -1706,13 +1706,16 @@
 
         /* Styles pour les sections de membres */
         .section-title {
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--gray-900);
             margin: 1rem 0 0.5rem 0;
-            padding: 0.5rem 0;
+            padding: 0.75rem;
             border-bottom: 2px solid var(--gray-200);
             text-align: center;
+            background: linear-gradient(135deg, #fef2f2, #ffffff);
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .section-title:first-child {
@@ -2414,86 +2417,99 @@
 
             const currentWeek = document.getElementById('weekSelect') ? document.getElementById('weekSelect').value : null;
 
-            // Section Membres d'équipe
+            // Section Membres d'équipe - Réorganisés par couleurs
             if (teamMembers.length > 0) {
-                const sectionTitle = document.createElement('div');
-                sectionTitle.className = 'section-title';
-                sectionTitle.textContent = '👥 Membres d\'équipe';
-                teamList.appendChild(sectionTitle);
 
-                // Trier les membres : chefs d'équipe en premier, puis les autres
-                const sortedMembers = [...teamMembers].sort((a, b) => {
-                    // Chefs d'équipe en premier
-                    if (a.role.includes('Chef') && !b.role.includes('Chef')) return -1;
-                    if (!a.role.includes('Chef') && b.role.includes('Chef')) return 1;
-                    // Conducteurs de travaux en second
-                    if (a.type === 'conducteur' && b.type !== 'conducteur') return -1;
-                    if (a.type !== 'conducteur' && b.type === 'conducteur') return 1;
-                    // Puis par ordre alphabétique
-                    return a.name.localeCompare(b.name);
+                // Réorganiser les membres par couleurs selon l'ordre demandé
+                // Séparer les membres par couleurs
+                const rougeMembers = teamMembers.filter(m => m.employeeType === 'employee');
+                const violetMembers = teamMembers.filter(m => m.employeeType === 'altrad-autres');
+                const bleuMembers = teamMembers.filter(m => m.employeeType === 'interim');
+                const jauneMembers = teamMembers.filter(m => m.employeeType === 'contractor');
+                const noirMembers = teamMembers.filter(m => m.employeeType === 'conducteur');
+
+                // Créer les sections par couleurs
+                const colorSections = [
+                    { members: rougeMembers, title: '🔴 Employés (Rouge)', color: 'rouge' },
+                    { members: violetMembers, title: '🟣 Altrad Autres (Violet)', color: 'violet' },
+                    { members: bleuMembers, title: '🔵 Intérimaires (Bleu)', color: 'bleu' },
+                    { members: jauneMembers, title: '🟡 Sous-traitants (Jaune)', color: 'jaune' },
+                    { members: noirMembers, title: '⚫ Conducteur de Travaux (Noir)', color: 'noir', separated: true }
+                ];
+
+                colorSections.forEach((section, sectionIndex) => {
+                    if (section.members.length > 0) {
+                        // Créer le titre de section
+                        const sectionTitle = document.createElement('div');
+                        sectionTitle.className = 'section-title';
+                        sectionTitle.textContent = section.title;
+                        
+                        // Ajouter une séparation visuelle pour la section noire
+                        if (section.separated) {
+                            sectionTitle.style.marginTop = '2rem';
+                            sectionTitle.style.borderTop = '2px solid #e5e7eb';
+                            sectionTitle.style.paddingTop = '1rem';
+                        }
+                        
+                        teamList.appendChild(sectionTitle);
+
+                        // Traiter chaque membre de cette section
+                        section.members.forEach((member, memberIndex) => {
+                            const memberDiv = document.createElement('div');
+                            const typeClass = member.employeeType || 'employee';
+                            memberDiv.className = `team-member ${typeClass}`;
+                            
+                            const originalIndex = teamMembers.findIndex(m => m.name === member.name);
+                            memberDiv.dataset.index = originalIndex;
+                            memberDiv.dataset.type = 'member';
+                            
+                            console.log('Membre créé:', member.name, 'Type:', typeClass, 'Classes:', memberDiv.className);
+
+                            const isUnavailable = member.status && ['formation', 'conge', 'maladie', 'unavailable'].includes(member.status);
+                            
+                            if (isUnavailable) {
+                                memberDiv.classList.add('team-member-unavailable');
+                                memberDiv.onclick = null;
+                            } else {
+                                memberDiv.onclick = () => toggleMemberSelection(originalIndex, 'member');
+                            }
+
+                            const isWeeklyAffected = !isUnavailable && currentWeek && member.type !== 'contractor' ? checkWeeklyAffectation(member.name, currentWeek) : false;
+                            const isAffected = !isUnavailable && currentWeek ? checkIfMemberAffected(member.name, currentWeek) : false;
+                            
+                            if (currentWeek && !isAffected && !isUnavailable) {
+                                memberDiv.classList.add('team-member-not-affected');
+                            }
+
+                            let statusInfo = '';
+                            if (isUnavailable) {
+                                const statusLabels = {
+                                    'formation': 'Formation',
+                                    'conge': 'Congé',
+                                    'maladie': 'Maladie',
+                                    'unavailable': 'Indisponible'
+                                };
+                                statusInfo = `<div class="member-status-unavailable">${statusLabels[member.status] || 'Indisponible'}</div>`;
+                            }
+
+                            const nameWithEmoji = isWeeklyAffected ? `${member.name} ✅` : member.name;
+                            console.log('🎯 VALIDATION RADICALE - Membre:', member.name, 'isWeeklyAffected:', isWeeklyAffected, 'nameWithEmoji:', nameWithEmoji);
+                            
+                            memberDiv.innerHTML = `
+                                <div class="member-name">${nameWithEmoji}</div>
+                                <div class="member-role ${member.type}">${member.role}</div>
+                                ${statusInfo}
+                            `;
+
+                            teamList.appendChild(memberDiv);
+                        });
+                    }
                 });
 
-                sortedMembers.forEach((member, sortedIndex) => {
-                const memberDiv = document.createElement('div');
-                    // Ajouter la classe selon le type d'employé
-                    const typeClass = member.employeeType || 'employee';
-                    memberDiv.className = `team-member ${typeClass}`;
-                    
-                    // Trouver l'index original dans le tableau non trié
-                    const originalIndex = teamMembers.findIndex(m => m.name === member.name);
-                    memberDiv.dataset.index = originalIndex;
-                    memberDiv.dataset.type = 'member';
-                    
-                    console.log('Membre créé:', member.name, 'Type:', typeClass, 'Classes:', memberDiv.className);
-
-                    // Vérifier si le membre est indisponible
-                    const isUnavailable = member.status && ['formation', 'conge', 'maladie', 'unavailable'].includes(member.status);
-                    
-                    if (isUnavailable) {
-                        // Membre indisponible - pas de sélection possible
-                        memberDiv.classList.add('team-member-unavailable');
-                        memberDiv.onclick = null; // Pas de clic possible
-                    } else {
-                        // Membre disponible - sélection possible
-                        memberDiv.onclick = () => toggleMemberSelection(originalIndex, 'member');
-                    }
-
-                    // Vérifier si le membre est affecté toute la semaine (seulement pour les membres disponibles et non sous-traitants)
-                    const isWeeklyAffected = !isUnavailable && currentWeek && member.type !== 'contractor' ? checkWeeklyAffectation(member.name, currentWeek) : false;
-                    const isAffected = !isUnavailable && currentWeek ? checkIfMemberAffected(member.name, currentWeek) : false;
-                    
-                    if (currentWeek && !isAffected && !isUnavailable) {
-                        memberDiv.classList.add('team-member-not-affected');
-                    }
-
-                    // Créer le contenu avec indication du statut
-                    let statusInfo = '';
-                    if (isUnavailable) {
-                        const statusLabels = {
-                            'formation': 'Formation',
-                            'conge': 'Congé',
-                            'maladie': 'Maladie',
-                            'unavailable': 'Indisponible'
-                        };
-                        statusInfo = `<div class="member-status-unavailable">${statusLabels[member.status] || 'Indisponible'}</div>`;
-                    }
-
-                // Ajouter l'emoji validé vert si affecté toute la semaine - VERSION RADICALE
-                const nameWithEmoji = isWeeklyAffected ? `${member.name} ✅` : member.name;
-                console.log('🎯 VALIDATION RADICALE - Membre:', member.name, 'isWeeklyAffected:', isWeeklyAffected, 'nameWithEmoji:', nameWithEmoji);
-                
-                memberDiv.innerHTML = `
-                    <div class="member-name">${nameWithEmoji}</div>
-                    <div class="member-role ${member.type}">${member.role}</div>
-                    ${statusInfo}
-                `;
-
-                teamList.appendChild(memberDiv);
-            });
             }
 
-            // Section Intérimaires
-            if (interims.length > 0) {
+            // Les intérimaires sont maintenant intégrés dans la nouvelle organisation par couleurs
+            if (false && interims.length > 0) {
                 const sectionTitle = document.createElement('div');
                 sectionTitle.className = 'section-title';
                 sectionTitle.textContent = '👔 Intérimaires';
@@ -2551,8 +2567,8 @@
                 });
             }
 
-            // Section Sous-traitants
-            if (contractors.length > 0) {
+            // Les sous-traitants sont maintenant intégrés dans la nouvelle organisation par couleurs
+            if (false && contractors.length > 0) {
                 const sectionTitle = document.createElement('div');
                 sectionTitle.className = 'section-title';
                 sectionTitle.textContent = '🏢 Sous-traitants';
