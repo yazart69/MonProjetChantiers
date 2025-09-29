@@ -447,7 +447,7 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 4px;
+            padding: 0;
             border-top-right-radius: 0.5rem;
             border-bottom-right-radius: 0.5rem;
         }
@@ -460,21 +460,33 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 22px;
-            height: 22px;
+            width: 30px;
+            height: 50%;
             font-size: 12px;
             color: white;
-            border-radius: 3px;
+            border-radius: 0;
             flex-shrink: 0;
+            margin: 0;
+            padding: 0;
         }
 
         .delete-chantier-btn {
             text-shadow: 1px 1px 0px #000000, -1px -1px 0px #000000, 1px -1px 0px #000000, -1px 1px 0px #000000;
         }
 
+        .edit-chantier-btn {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0.5rem;
+        }
+
         .edit-chantier-btn:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: scale(1.1);
+        }
+
+        .delete-chantier-btn {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0.5rem;
         }
 
         .delete-chantier-btn:hover {
