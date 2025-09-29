@@ -506,6 +506,29 @@
         }
 
         /* Sélection des jours */
+        .team-selection {
+            margin-bottom: 2rem;
+        }
+
+        .team-selection h3,
+        .days-selection h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--gray-700);
+            border-bottom: 2px solid var(--primary-red);
+            padding-bottom: 0.5rem;
+        }
+
+        .chantier-selection h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--gray-700);
+            border-bottom: 2px solid var(--primary-red);
+            padding-bottom: 0.5rem;
+        }
+
         .days-selection {
             margin-bottom: 2rem;
         }
@@ -2062,25 +2085,6 @@
             </div>
             
             <!-- Sélection des membres en largeur en haut -->
-            <div class="members-selection-top" style="background: white; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; box-shadow: var(--shadow-md);">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h2 style="color: var(--primary-red); margin: 0;">👥 Sélection des Membres d'Équipe</h2>
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div id="selectionCounter" class="selection-counter" style="display: none;">
-                            <span id="selectedCount">0</span> membre(s) sélectionné(s)
-                        </div>
-                        <button class="btn btn-sm btn-outline" onclick="selectAllMembers()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
-                            ✅ Tout sélectionner
-                        </button>
-                        <button class="btn btn-sm btn-outline" onclick="deselectAllMembers()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
-                            ❌ Tout désélectionner
-                        </button>
-                    </div>
-                </div>
-                <div class="team-list-horizontal" id="teamList" style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
-                        <!-- Les membres seront générés par JavaScript -->
-                    </div>
-                </div>
             
             <div class="content-grid" style="grid-template-columns: 1fr;">
 
@@ -2095,7 +2099,7 @@
                     <!-- Sélection des chantiers -->
                     <div class="chantier-selection">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <h3 style="margin: 0; color: var(--gray-700);">Chantiers disponibles :</h3>
+                            <h3>🏗️ Chantiers disponibles :</h3>
                             <button id="addChantierBtn" class="add-chantier-btn" onclick="showAddChantierModal()" title="Ajouter un nouveau chantier">
                                 <span style="font-size: 18px; font-weight: bold;">+</span>
                             </button>
@@ -2105,9 +2109,28 @@
                         </div>
                     </div>
 
+                    <!-- Sélection des membres d'équipe -->
+                    <div class="team-selection">
+                        <h3>👥 Sélection des Membres d'Équipe :</h3>
+                        <div class="selection-controls" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                            <div id="selectionCounter" class="selection-counter" style="display: none;">
+                                <span id="selectedCount">0</span> membre(s) sélectionné(s)
+                            </div>
+                            <button class="btn btn-sm btn-outline" onclick="selectAllMembers()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                ✅ Tout sélectionner
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="deselectAllMembers()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                ❌ Tout désélectionner
+                            </button>
+                        </div>
+                        <div class="team-list-horizontal" id="teamList" style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                            <!-- Les membres seront générés par JavaScript -->
+                        </div>
+                    </div>
+
                     <!-- Sélection des jours -->
                     <div class="days-selection">
-                        <h3 style="margin-bottom: 1rem; color: var(--gray-700);">Jours de la semaine :</h3>
+                        <h3>📅 Jours de la semaine :</h3>
                         <div class="days-grid">
                             <div class="day-item" data-day="L">Lundi</div>
                             <div class="day-item" data-day="M">Mardi</div>
