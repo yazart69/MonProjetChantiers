@@ -2776,6 +2776,104 @@
             selectedChantier = chantier;
         }
 
+        // Fonction pour afficher le modal d'ajout de chantier
+        function showAddChantierModal() {
+            const modal = document.getElementById('addChantierModal');
+            if (modal) {
+                modal.style.display = 'block';
+                // Réinitialiser le formulaire
+                document.getElementById('chantierName').value = '';
+                document.getElementById('chantierDescription').value = '';
+            } else {
+                console.error('Modal addChantierModal non trouvé');
+            }
+        }
+
+        // Fonction pour fermer le modal d'ajout de chantier
+        function closeAddChantierModal() {
+            const modal = document.getElementById('addChantierModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Fonction pour modifier un chantier
+        function editChantier(chantierName) {
+            const newName = prompt(`Modifier le nom du chantier :`, chantierName);
+            if (newName && newName.trim() !== '' && newName !== chantierName) {
+                // Charger la liste des chantiers
+                const chantiersList = JSON.parse(localStorage.getItem('chantiersList') || '[]');
+                
+                // Mettre à jour le nom dans la liste
+                const updatedList = chantiersList.map(chantier => 
+                    chantier === chantierName ? newName : chantier
+                );
+                
+                // Sauvegarder la liste mise à jour
+                localStorage.setItem('chantiersList', JSON.stringify(updatedList));
+                
+                // Mettre à jour toutes les affectations de ce chantier dans toutes les semaines
+                Object.keys(planningData).forEach(week => {
+                    Object.keys(planningData[week]).forEach(day => {
+                        if (planningData[week][day][chantierName]) {
+                            // Créer une copie avec le nouveau nom
+                            planningData[week][day][newName] = planningData[week][day][chantierName];
+                            // Supprimer l'ancien
+                            delete planningData[week][day][chantierName];
+                        }
+                    });
+                });
+                
+                // Sauvegarder les données de planning
+                savePlanningData();
+                
+                // Recharger l'affichage
+                generateChantierGrid();
+                updateWeekPlanning();
+                
+                // Notification
+                showNotification(`Chantier renommé : "${newName}"`, 'success');
+                
+                console.log(`Chantier renommé de "${chantierName}" vers "${newName}"`);
+            }
+        }
+
+        // Fonction pour supprimer un chantier
+        function deleteChantier(chantierName) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer le chantier "${chantierName}" ?\n\nCette action supprimera également toutes les affectations associées à ce chantier.`)) {
+                // Charger la liste des chantiers
+                const chantiersList = JSON.parse(localStorage.getItem('chantiersList') || '[]');
+                
+                // Supprimer le chantier de la liste
+                const updatedList = chantiersList.filter(chantier => chantier !== chantierName);
+                
+                // Sauvegarder la liste mise à jour
+                localStorage.setItem('chantiersList', JSON.stringify(updatedList));
+                
+                // Supprimer toutes les affectations de ce chantier de toutes les semaines
+                const currentWeek = document.getElementById('weekSelect').value;
+                Object.keys(planningData).forEach(week => {
+                    Object.keys(planningData[week]).forEach(day => {
+                        if (planningData[week][day][chantierName]) {
+                            delete planningData[week][day][chantierName];
+                        }
+                    });
+                });
+                
+                // Sauvegarder les données de planning
+                savePlanningData();
+                
+                // Recharger l'affichage
+                generateChantierGrid();
+                updateWeekPlanning();
+                
+                // Notification
+                showNotification(`Chantier "${chantierName}" supprimé`, 'success');
+                
+                console.log(`Chantier "${chantierName}" supprimé avec succès`);
+            }
+        }
+
         // Gestion de la sélection des jours
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('day-item')) {
