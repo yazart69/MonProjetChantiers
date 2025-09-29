@@ -2418,23 +2418,23 @@
             const currentWeek = document.getElementById('weekSelect') ? document.getElementById('weekSelect').value : null;
 
             // Section Membres d'équipe - Réorganisés par couleurs
-            if (teamMembers.length > 0) {
+            if (teamMembers.length > 0 || interims.length > 0 || contractors.length > 0) {
 
                 // Réorganiser les membres par couleurs selon l'ordre demandé
-                // Séparer les membres par couleurs
+                // Séparer les membres par couleurs (inclure tous les types)
                 const rougeMembers = teamMembers.filter(m => m.employeeType === 'employee');
                 const violetMembers = teamMembers.filter(m => m.employeeType === 'altrad-autres');
-                const bleuMembers = teamMembers.filter(m => m.employeeType === 'interim');
-                const jauneMembers = teamMembers.filter(m => m.employeeType === 'contractor');
+                const bleuMembers = [...teamMembers.filter(m => m.employeeType === 'interim'), ...interims];
+                const jauneMembers = [...teamMembers.filter(m => m.employeeType === 'contractor'), ...contractors];
                 const noirMembers = teamMembers.filter(m => m.employeeType === 'conducteur');
 
                 // Créer les sections par couleurs
                 const colorSections = [
-                    { members: rougeMembers, title: '🔴 Employés (Rouge)', color: 'rouge' },
-                    { members: violetMembers, title: '🟣 Altrad Autres (Violet)', color: 'violet' },
-                    { members: bleuMembers, title: '🔵 Intérimaires (Bleu)', color: 'bleu' },
-                    { members: jauneMembers, title: '🟡 Sous-traitants (Jaune)', color: 'jaune' },
-                    { members: noirMembers, title: '⚫ Conducteur de Travaux (Noir)', color: 'noir', separated: true }
+                    { members: noirMembers, title: '⚫ Conducteur de Travaux', color: 'noir', separated: true },
+                    { members: rougeMembers, title: '🔴 Employés', color: 'rouge' },
+                    { members: violetMembers, title: '🟣 Altrad Autres', color: 'violet' },
+                    { members: bleuMembers, title: '🔵 Intérimaires', color: 'bleu' },
+                    { members: jauneMembers, title: '🟡 Sous-traitants', color: 'jaune' }
                 ];
 
                 colorSections.forEach((section, sectionIndex) => {
@@ -2456,12 +2456,32 @@
                         // Traiter chaque membre de cette section
                         section.members.forEach((member, memberIndex) => {
                             const memberDiv = document.createElement('div');
-                            const typeClass = member.employeeType || 'employee';
+                            let typeClass, originalIndex, datasetType, onclickHandler;
+
+                            // Déterminer le type et les handlers selon la section
+                            if (section.color === 'bleu') {
+                                // Intérimaires
+                                typeClass = 'interim-member';
+                                originalIndex = interims.findIndex(i => i.name === member.name);
+                                datasetType = 'interim';
+                                onclickHandler = () => selectInterimWithCount(originalIndex, 'interim');
+                            } else if (section.color === 'jaune') {
+                                // Sous-traitants
+                                typeClass = 'contractor-member';
+                                originalIndex = contractors.findIndex(c => c.name === member.name);
+                                datasetType = 'contractor';
+                                onclickHandler = () => selectContractorWithCount(originalIndex, 'contractor');
+                            } else {
+                                // Autres membres (employés, altrad, conducteur)
+                                typeClass = member.employeeType || 'employee';
+                                originalIndex = teamMembers.findIndex(m => m.name === member.name);
+                                datasetType = 'member';
+                                onclickHandler = () => toggleMemberSelection(originalIndex, 'member');
+                            }
+
                             memberDiv.className = `team-member ${typeClass}`;
-                            
-                            const originalIndex = teamMembers.findIndex(m => m.name === member.name);
                             memberDiv.dataset.index = originalIndex;
-                            memberDiv.dataset.type = 'member';
+                            memberDiv.dataset.type = datasetType;
                             
                             console.log('Membre créé:', member.name, 'Type:', typeClass, 'Classes:', memberDiv.className);
 
@@ -2471,7 +2491,7 @@
                                 memberDiv.classList.add('team-member-unavailable');
                                 memberDiv.onclick = null;
                             } else {
-                                memberDiv.onclick = () => toggleMemberSelection(originalIndex, 'member');
+                                memberDiv.onclick = onclickHandler;
                             }
 
                             const isWeeklyAffected = !isUnavailable && currentWeek && member.type !== 'contractor' ? checkWeeklyAffectation(member.name, currentWeek) : false;
