@@ -2563,8 +2563,16 @@
             chantierGrid.innerHTML = '';
 
             const isPrinting = window.matchMedia('print').matches;
+            
+            // Charger la liste des chantiers depuis localStorage
+            const chantiersList = JSON.parse(localStorage.getItem('chantiersList') || '[]');
+            
+            if (chantiersList.length === 0) {
+                chantierGrid.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucun chantier disponible. Cliquez sur + pour en ajouter un.</p>';
+                return;
+            }
 
-            chantiers.forEach((chantier, index) => {
+            chantiersList.forEach((chantier, index) => {
                 const chantierDiv = document.createElement('div');
                 chantierDiv.className = 'chantier-item';
                 chantierDiv.dataset.chantier = chantier;
@@ -2795,6 +2803,47 @@
             if (modal) {
                 modal.style.display = 'none';
             }
+        }
+
+        // Fonction pour cacher le modal d'ajout de chantier (alias)
+        function hideAddChantierModal() {
+            closeAddChantierModal();
+        }
+
+        // Fonction pour ajouter un nouveau chantier
+        function addNewChantier(event) {
+            event.preventDefault();
+            
+            const chantierName = document.getElementById('chantierName').value.trim();
+            const chantierDescription = document.getElementById('chantierDescription').value.trim();
+            
+            if (!chantierName) {
+                alert('Le nom du chantier est obligatoire');
+                return;
+            }
+            
+            // Vérifier si le chantier existe déjà
+            const existingChantiers = JSON.parse(localStorage.getItem('chantiersList') || '[]');
+            if (existingChantiers.includes(chantierName)) {
+                alert('Ce chantier existe déjà');
+                return;
+            }
+            
+            // Ajouter le nouveau chantier à la liste
+            existingChantiers.push(chantierName);
+            localStorage.setItem('chantiersList', JSON.stringify(existingChantiers));
+            
+            // Fermer le modal
+            closeAddChantierModal();
+            
+            // Recharger la grille des chantiers
+            loadChantiersList();
+            generateChantierGrid();
+            
+            // Notification
+            showNotification(`Chantier "${chantierName}" ajouté avec succès`, 'success');
+            
+            console.log(`Nouveau chantier ajouté: ${chantierName}`);
         }
 
         // Fonction pour modifier un chantier
@@ -3514,11 +3563,25 @@
                 const saved = localStorage.getItem('chantiersList');
                 if (saved) {
                     const allChantiers = JSON.parse(saved);
+                    // Mettre à jour la variable globale chantiers
                     chantiers.length = 0;
                     chantiers.push(...allChantiers);
                     console.log('📖 Liste des chantiers chargée:', chantiers.length, 'chantiers');
                 } else {
                     console.log('📖 Aucune liste de chantiers sauvegardée');
+                    // Initialiser avec des chantiers par défaut si aucun n'existe
+                    const defaultChantiers = [
+                        'Grand Lyon – Pont de Chasse',
+                        'VICHY',
+                        'CAMPENON BERNARD',
+                        'EFFIA PARKING BARET',
+                        'FRAMATOME',
+                        'Halle 9'
+                    ];
+                    chantiers.length = 0;
+                    chantiers.push(...defaultChantiers);
+                    localStorage.setItem('chantiersList', JSON.stringify(defaultChantiers));
+                    console.log('📖 Chantiers par défaut initialisés');
                 }
             } catch (error) {
                 console.error('❌ Erreur lors du chargement des chantiers:', error);
@@ -3723,7 +3786,7 @@
             }, 3000);
         }
 
-        // Fonction pour supprimer une affectation - VERSION AMÉLIORÉE
+        // Fonction pour supprimer une affectation - VERSION CORRIGÉE
         function removeAffectation(day, chantier, memberName) {
             console.log(`🗑️ SUPPRESSION: ${memberName} sur ${chantier} le ${day}`);
             
@@ -3740,12 +3803,8 @@
                 return;
             }
             
-            if (!planningData[currentWeek][day][chantier]) {
-                console.log(`❌ Pas de données pour le chantier ${chantier}`);
-                return;
-            }
-            
-            const affectations = planningData[currentWeek][day][chantier];
+            // CORRECTION: Les affectations sont stockées comme un tableau dans planningData[week][day]
+            const affectations = planningData[currentWeek][day];
             console.log(`🗑️ Affectations avant suppression:`, affectations);
             
             let suppressionReussie = false;
@@ -3753,20 +3812,21 @@
             if (Array.isArray(affectations)) {
                 const beforeCount = affectations.length;
                 
-                // Supprimer l'affectation
-                planningData[currentWeek][day][chantier] = affectations.filter(affectation => {
-                    // Gérer différents formats d'affectations
+                // Supprimer l'affectation qui correspond au membre ET au chantier
+                planningData[currentWeek][day] = affectations.filter(affectation => {
                     const name = affectation.name || affectation;
-                    return name !== memberName;
+                    const chantierAffectation = affectation.chantier || affectation;
+                    // Supprimer si c'est le même membre ET le même chantier
+                    return !(name === memberName && chantierAffectation === chantier);
                 });
                 
-                const afterCount = planningData[currentWeek][day][chantier].length;
+                const afterCount = planningData[currentWeek][day].length;
                 
                 if (beforeCount > afterCount) {
                     suppressionReussie = true;
                     console.log(`✅ SUPPRESSION RÉUSSIE: ${beforeCount} -> ${afterCount} affectations`);
                 } else {
-                    console.log(`⚠️ Aucune affectation trouvée pour ${memberName}`);
+                    console.log(`⚠️ Aucune affectation trouvée pour ${memberName} sur ${chantier}`);
                 }
             } else {
                 console.log(`❌ Les affectations ne sont pas un tableau:`, typeof affectations);
