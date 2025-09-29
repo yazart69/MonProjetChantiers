@@ -2864,11 +2864,14 @@
                 // Mettre à jour toutes les affectations de ce chantier dans toutes les semaines
                 Object.keys(planningData).forEach(week => {
                     Object.keys(planningData[week]).forEach(day => {
-                        if (planningData[week][day][chantierName]) {
-                            // Créer une copie avec le nouveau nom
-                            planningData[week][day][newName] = planningData[week][day][chantierName];
-                            // Supprimer l'ancien
-                            delete planningData[week][day][chantierName];
+                        if (Array.isArray(planningData[week][day])) {
+                            // Mettre à jour le nom du chantier dans les affectations
+                            planningData[week][day] = planningData[week][day].map(affectation => {
+                                if (affectation.chantier === chantierName) {
+                                    return { ...affectation, chantier: newName };
+                                }
+                                return affectation;
+                            });
                         }
                     });
                 });
@@ -2900,11 +2903,14 @@
                 localStorage.setItem('chantiersList', JSON.stringify(updatedList));
                 
                 // Supprimer toutes les affectations de ce chantier de toutes les semaines
-                const currentWeek = document.getElementById('weekSelect').value;
                 Object.keys(planningData).forEach(week => {
                     Object.keys(planningData[week]).forEach(day => {
-                        if (planningData[week][day][chantierName]) {
-                            delete planningData[week][day][chantierName];
+                        if (Array.isArray(planningData[week][day])) {
+                            // Filtrer les affectations pour supprimer celles du chantier
+                            planningData[week][day] = planningData[week][day].filter(affectation => {
+                                const chantierAffectation = affectation.chantier || affectation;
+                                return chantierAffectation !== chantierName;
+                            });
                         }
                     });
                 });
@@ -3070,7 +3076,11 @@
 
         // Fonction d'impression du planning hebdomadaire
         function printPlanning() {
+            console.log('🖨️ Début de l\'impression du planning');
+            
             const currentWeek = document.getElementById('weekSelect').value;
+            console.log('📅 Semaine sélectionnée:', currentWeek);
+            
             const weekStartDate = getWeekStartDate(currentWeek);
             const weekEndDate = new Date(weekStartDate);
             weekEndDate.setDate(weekStartDate.getDate() + 6);
@@ -3088,17 +3098,29 @@
             const planningSection = document.querySelector('.planning-section');
             const tableContainer = document.querySelector('.planning-table-container');
             
-            // Supprimer les anciens titres s'ils existent
-            const existingTitle = planningSection.querySelector('.planning-title');
-            const existingInfo = planningSection.querySelector('.week-info');
-            if (existingTitle) existingTitle.remove();
-            if (existingInfo) existingInfo.remove();
+            console.log('🔍 Éléments DOM trouvés:', {
+                planningSection: !!planningSection,
+                tableContainer: !!tableContainer
+            });
             
-            // Insérer les nouveaux titres
-            planningSection.insertBefore(weekInfo, tableContainer);
-            planningSection.insertBefore(planningTitle, weekInfo);
+            if (planningSection && tableContainer) {
+                // Supprimer les anciens titres s'ils existent
+                const existingTitle = planningSection.querySelector('.planning-title');
+                const existingInfo = planningSection.querySelector('.week-info');
+                if (existingTitle) existingTitle.remove();
+                if (existingInfo) existingInfo.remove();
+                
+                // Insérer les nouveaux titres
+                planningSection.insertBefore(weekInfo, tableContainer);
+                planningSection.insertBefore(planningTitle, weekInfo);
+                
+                console.log('✅ Titres ajoutés pour l\'impression');
+            } else {
+                console.warn('⚠️ Éléments DOM non trouvés, impression directe');
+            }
             
             // Lancer l'impression
+            console.log('🖨️ Lancement de l\'impression...');
             window.print();
             
             // Nettoyer après impression (optionnel)
@@ -3846,10 +3868,19 @@
             }
         }
 
-        // Rendre la fonction accessible globalement
+        // Rendre les fonctions accessibles globalement
         window.removeAffectation = removeAffectation;
+        window.showAddChantierModal = showAddChantierModal;
+        window.closeAddChantierModal = closeAddChantierModal;
+        window.hideAddChantierModal = hideAddChantierModal;
+        window.addNewChantier = addNewChantier;
+        window.editChantier = editChantier;
+        window.deleteChantier = deleteChantier;
+        window.generateChantierGrid = generateChantierGrid;
+        window.loadChantiersList = loadChantiersList;
+        window.printPlanning = printPlanning;
         
-        // Debug: Vérifier que la fonction est accessible
+        // Debug: Vérifier que les fonctions sont accessibles
         console.log('🔧 removeAffectation function available:', typeof window.removeAffectation);
 
         // Variables pour les statuts des chantiers
