@@ -840,10 +840,10 @@
                 print-color-adjust: exact !important;
             }
 
-            /* Configuration de la page - A4 Paysage */
+            /* Configuration de la page - A4 Portrait */
             @page {
-                margin: 0.2cm;
-                size: A4 landscape;
+                margin: 1cm;
+                size: A4;
             }
 
             body {
@@ -863,8 +863,14 @@
 
             .logo-container {
                 margin-bottom: 2px !important;
+                padding: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+                justify-content: flex-start !important;
             }
 
             .logo-image {
@@ -896,14 +902,30 @@
             }
 
             /* Titre personnalisé pour l'impression */
-            .planning-section::before {
-                content: "PLANNING PZO SEMAINE " attr(data-week);
-                display: block;
-                font-size: 10px;
-                font-weight: bold;
-                text-align: center;
-                margin: 0 0 2px 0;
-                color: #dc2626;
+            .planning-title {
+                text-align: center !important;
+                font-size: 16px !important;
+                font-weight: bold !important;
+                margin: 0 0 8px 0 !important;
+                padding: 8px 0 !important;
+                background: #f0f0f0 !important;
+                border-radius: 4px !important;
+                letter-spacing: 0.5px !important;
+                border-bottom: 2px solid #dc2626 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .week-info {
+                text-align: center !important;
+                font-size: 12px !important;
+                font-weight: 600 !important;
+                margin: 0 0 8px 0 !important;
+                padding: 6px 0 !important;
+                background: #f8f8f8 !important;
+                border-radius: 3px !important;
+                color: #333 !important;
+                border: 1px solid #ddd !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
@@ -917,31 +939,34 @@
                 border: none !important;
             }
 
-            /* Optimiser le tableau pour A4 paysage */
+            /* Optimiser le tableau pour A4 portrait - centré */
             .planning-table-container {
                 width: 100% !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 padding: 0 !important;
                 overflow: visible !important;
+                display: flex !important;
+                justify-content: center !important;
             }
 
             .planning-table {
                 width: 100% !important;
                 border-collapse: collapse !important;
-                font-size: 5px !important;
+                font-size: 8px !important;
                 margin: 0 !important;
                 page-break-inside: avoid !important;
-                border: 1px solid #000 !important;
+                border: 2px solid #000 !important;
+                border-radius: 8px !important;
                 table-layout: fixed !important;
             }
 
             .planning-table th,
             .planning-table td {
-                padding: 1px !important;
+                padding: 4px !important;
                 border: 1px solid #000 !important;
-                font-size: 5px !important;
-                line-height: 1.0 !important;
-                vertical-align: top !important;
+                font-size: 8px !important;
+                line-height: 1.2 !important;
+                vertical-align: middle !important;
                 word-wrap: break-word !important;
                 overflow: hidden !important;
             }
@@ -951,11 +976,11 @@
                 color: white !important;
                 font-weight: bold !important;
                 text-align: center !important;
-                font-size: 5px !important;
+                font-size: 9px !important;
                 text-transform: uppercase !important;
                 white-space: normal !important;
                 word-break: break-word !important;
-                line-height: 1.0 !important;
+                line-height: 1.2 !important;
             }
 
             /* Première colonne (jours) */
@@ -968,23 +993,25 @@
                 width: 50px !important;
             }
 
-            /* Cellules d'affectation ultra-compactes */
+            /* Cellules d'affectation optimisées */
             .affectation-cell {
-                min-height: 6px !important;
-                padding: 0px !important;
+                min-height: 20px !important;
+                padding: 2px !important;
                 width: auto !important;
             }
 
-            /* Éléments d'affectation miniatures */
+            /* Éléments d'affectation agrandis */
             .affectation-item {
-                font-size: 4px !important;
-                padding: 1px !important;
-                margin: 0px !important;
-                border-radius: 1px !important;
+                font-size: 7px !important;
+                padding: 2px 4px !important;
+                margin: 1px !important;
+                border-radius: 3px !important;
                 display: block !important;
-                line-height: 1.0 !important;
+                line-height: 1.1 !important;
                 font-weight: bold !important;
                 text-align: center !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
 
             /* Codes couleurs par type d'employé */
@@ -3180,6 +3207,15 @@
             const weekEndDate = new Date(weekStartDate);
             weekEndDate.setDate(weekStartDate.getDate() + 6);
             
+            // Formater les dates en français
+            const formatDateFrench = (date) => {
+                const day = date.getDate();
+                const monthNames = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
+                                  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+                const month = monthNames[date.getMonth()];
+                return `${day} ${month}`;
+            };
+            
             // Créer un titre et des informations pour l'impression
             const planningTitle = document.createElement('div');
             planningTitle.className = 'planning-title';
@@ -3187,7 +3223,7 @@
             
             const weekInfo = document.createElement('div');
             weekInfo.className = 'week-info';
-            weekInfo.textContent = `${weekStartDate.toLocaleDateString('fr-FR')} - ${weekEndDate.toLocaleDateString('fr-FR')}`;
+            weekInfo.textContent = `Semaine du lundi ${formatDateFrench(weekStartDate)} au vendredi ${formatDateFrench(weekEndDate)}`;
             
             // Insérer le titre et les infos avant le tableau
             const planningSection = document.querySelector('.planning-section');
