@@ -1230,33 +1230,9 @@
         }
 
 
-        /* Styles pour les boutons de suppression */
+        /* Styles pour les boutons de suppression - MASQUÉS */
         .remove-affectation-btn {
-            background: #dc2626 !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 50% !important;
-            width: 20px !important;
-            height: 20px !important;
-            font-size: 12px !important;
-            cursor: pointer !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            margin-left: 5px !important;
-            transition: all 0.2s ease !important;
-            font-weight: bold !important;
-            line-height: 1 !important;
-        }
-
-        .remove-affectation-btn:hover {
-            background: #b91c1c !important;
-            transform: scale(1.1) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-        }
-
-        .remove-affectation-btn:active {
-            transform: scale(0.95) !important;
+            display: none !important;
         }
 
         /* Styles pour le bouton d'ajout de chantier */
@@ -3219,13 +3195,10 @@
                                         <div style="font-size: 5px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
                                     </div>`;
                                 } else {
-                                    cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                                            <div>
-                                                <div>${affectation.name}</div>
-                                                <div style="font-size: 10px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
-                                            </div>
-                                            <button onclick="console.log('🔴 Bouton cliqué:', '${day}', '${chantier}', '${affectation.name}'); removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
+                                    cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}">
+                                        <div>
+                                            <div>${affectation.name}</div>
+                                            <div style="font-size: 10px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
                                         </div>
                                     </div>`;
                                 }
@@ -3237,13 +3210,10 @@
                                             <div style="font-size: 5px; font-style: italic;">(${affectation.count} personnes)</div>
                                         </div>`;
                                     } else {
-                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
-                                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                <div>
-                                                    <div>${affectation.name}</div>
-                                                    <div style="font-size: 10px; font-style: italic;">(${affectation.count} personnes)</div>
-                                                </div>
-                                                <button onclick="console.log('🔴 Bouton cliqué:', '${day}', '${chantier}', '${affectation.name}'); removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
+                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}">
+                                            <div>
+                                                <div>${affectation.name}</div>
+                                                <div style="font-size: 10px; font-style: italic;">(${affectation.count} personnes)</div>
                                             </div>
                                         </div>`;
                                     }
@@ -3253,11 +3223,8 @@
                                             <div>${affectation.name}</div>
                                         </div>`;
                                     } else {
-                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin} position: relative;">
-                                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                <div>${affectation.name}</div>
-                                                <button onclick="console.log('🔴 Bouton cliqué:', '${day}', '${chantier}', '${affectation.name}'); removeAffectation('${day}', '${chantier}', '${affectation.name}')" class="remove-affectation-btn" title="Supprimer cette affectation">×</button>
-                                            </div>
+                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}">
+                                            <div>${affectation.name}</div>
                                         </div>`;
                                     }
                                 }
