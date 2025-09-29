@@ -1235,6 +1235,17 @@
             display: none !important;
         }
 
+        /* Styles pour les affectations cliquables */
+        .affectation-item {
+            transition: all 0.2s ease;
+        }
+
+        .affectation-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            opacity: 0.9;
+        }
+
         /* Styles pour le bouton d'ajout de chantier */
         .add-chantier-btn {
             background: #16a34a !important;
@@ -3195,7 +3206,7 @@
                                         <div style="font-size: 5px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
                                     </div>`;
                                 } else {
-                                    cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}">
+                                    cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}; cursor: pointer;" onclick="confirmRemoveAffectation('${day}', '${chantier}', '${affectation.name}')">
                                         <div>
                                             <div>${affectation.name}</div>
                                             <div style="font-size: 10px; font-style: italic;">${statusLabels[member.status] || 'Indisponible'}</div>
@@ -3210,7 +3221,7 @@
                                             <div style="font-size: 5px; font-style: italic;">(${affectation.count} personnes)</div>
                                         </div>`;
                                     } else {
-                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}">
+                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}; cursor: pointer;" onclick="confirmRemoveAffectation('${day}', '${chantier}', '${affectation.name}')">
                                             <div>
                                                 <div>${affectation.name}</div>
                                                 <div style="font-size: 10px; font-style: italic;">(${affectation.count} personnes)</div>
@@ -3223,7 +3234,7 @@
                                             <div>${affectation.name}</div>
                                         </div>`;
                                     } else {
-                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}">
+                                        cellHTML += `<div class="affectation-item ${colorClass}" style="padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; ${margin}; cursor: pointer;" onclick="confirmRemoveAffectation('${day}', '${chantier}', '${affectation.name}')">
                                             <div>${affectation.name}</div>
                                         </div>`;
                                     }
@@ -3551,6 +3562,26 @@
                 }
                 
                 console.log(`🗑️ Image supprimée pour ${chantier}`);
+            }
+        }
+
+        // Fonction pour confirmer la suppression d'une affectation
+        function confirmRemoveAffectation(day, chantier, memberName) {
+            const dayNames = {
+                'lundi': 'Lundi',
+                'mardi': 'Mardi', 
+                'mercredi': 'Mercredi',
+                'jeudi': 'Jeudi',
+                'vendredi': 'Vendredi',
+                'samedi': 'Samedi',
+                'dimanche': 'Dimanche'
+            };
+            
+            const dayDisplay = dayNames[day] || day;
+            const message = `Supprimer l'affectation de ${memberName} sur ${chantier} le ${dayDisplay} ?`;
+            
+            if (confirm(message)) {
+                removeAffectation(day, chantier, memberName);
             }
         }
 
