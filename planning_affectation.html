@@ -3582,12 +3582,52 @@
             
             if (confirm(message)) {
                 removeAffectation(day, chantier, memberName);
+                
+                // Notification visuelle de suppression
+                showNotification(`Affectation de ${memberName} supprimée`, 'success');
             }
         }
 
-        // Fonction pour supprimer une affectation - VERSION RADICALE
+        // Fonction pour afficher une notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#16a34a' : '#dc2626'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animation d'entrée
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Suppression automatique après 3 secondes
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Fonction pour supprimer une affectation - VERSION AMÉLIORÉE
         function removeAffectation(day, chantier, memberName) {
-            console.log(`🗑️ SUPPRESSION RADICALE: ${memberName} sur ${chantier} le ${day}`);
+            console.log(`🗑️ SUPPRESSION: ${memberName} sur ${chantier} le ${day}`);
             
             const currentWeek = document.getElementById('weekSelect').value;
             console.log(`🗑️ Semaine courante: ${currentWeek}`);
@@ -3610,26 +3650,41 @@
             const affectations = planningData[currentWeek][day][chantier];
             console.log(`🗑️ Affectations avant suppression:`, affectations);
             
+            let suppressionReussie = false;
+            
             if (Array.isArray(affectations)) {
                 const beforeCount = affectations.length;
-                planningData[currentWeek][day][chantier] = affectations.filter(affectation => affectation.name !== memberName);
+                
+                // Supprimer l'affectation
+                planningData[currentWeek][day][chantier] = affectations.filter(affectation => {
+                    // Gérer différents formats d'affectations
+                    const name = affectation.name || affectation;
+                    return name !== memberName;
+                });
+                
                 const afterCount = planningData[currentWeek][day][chantier].length;
                 
-                console.log(`✅ SUPPRESSION RÉUSSIE: ${beforeCount} -> ${afterCount} affectations`);
-                
+                if (beforeCount > afterCount) {
+                    suppressionReussie = true;
+                    console.log(`✅ SUPPRESSION RÉUSSIE: ${beforeCount} -> ${afterCount} affectations`);
+                } else {
+                    console.log(`⚠️ Aucune affectation trouvée pour ${memberName}`);
+                }
+            } else {
+                console.log(`❌ Les affectations ne sont pas un tableau:`, typeof affectations);
+            }
+            
+            if (suppressionReussie) {
                 // Sauvegarder les données
                 savePlanningData();
                 
-                // Mettre à jour l'affichage
-                updateWeekPlanning();
-                updateSelectionCounter();
-                
-                // FORCER la mise à jour de la validation
-                generateTeamList();
-                
-                console.log(`✅ Affichage mis à jour après suppression`);
-            } else {
-                console.log(`❌ Les affectations ne sont pas un tableau:`, typeof affectations);
+                // Forcer la mise à jour complète de l'affichage
+                setTimeout(() => {
+                    updateWeekPlanning();
+                    updateSelectionCounter();
+                    generateTeamList();
+                    console.log(`✅ Affichage mis à jour après suppression`);
+                }, 100);
             }
         }
 
