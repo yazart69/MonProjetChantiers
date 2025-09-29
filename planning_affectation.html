@@ -1240,140 +1240,6 @@
             opacity: 0.9;
         }
 
-        /* Styles pour le bouton d'ajout de chantier */
-        .add-chantier-btn {
-            background: #16a34a !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 50% !important;
-            width: 40px !important;
-            height: 40px !important;
-            cursor: pointer !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            transition: all 0.2s ease !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-        }
-
-        .add-chantier-btn:hover {
-            background: #15803d !important;
-            transform: scale(1.1) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
-        }
-
-        .add-chantier-btn:active {
-            transform: scale(0.95) !important;
-        }
-
-        /* Styles pour la modal d'ajout de chantier */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            max-width: 500px;
-            width: 90%;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.show .modal-content {
-            transform: scale(1);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #e5e7eb;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #dc2626;
-            margin: 0;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #6b7280;
-            padding: 0.5rem;
-            border-radius: 50%;
-            transition: all 0.2s ease;
-        }
-
-        .modal-close:hover {
-            background: #f3f4f6;
-            color: #dc2626;
-        }
-
-        .modal-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .form-input {
-            padding: 0.75rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #dc2626;
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e5e7eb;
-        }
 
         .btn-primary {
             background: #dc2626;
@@ -1842,7 +1708,6 @@
             .sidebar,
             .header-actions,
             .actions,
-            .add-chantier-btn,
             .edit-chantier-btn,
             .delete-chantier-btn,
             .chantier-actions,
@@ -2058,11 +1923,8 @@
                     
                     <!-- Sélection des chantiers -->
                     <div class="chantier-selection">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div style="margin-bottom: 1rem;">
                             <h3 style="margin: 0; color: var(--gray-700);">Chantiers disponibles :</h3>
-                            <button id="addChantierBtn" class="add-chantier-btn" onclick="showAddChantierModal()" title="Ajouter un nouveau chantier">
-                                <span style="font-size: 18px; font-weight: bold;">+</span>
-                            </button>
                         </div>
                         <div class="chantier-grid" id="chantierGrid">
                             <!-- Les chantiers seront générés par JavaScript -->
@@ -2136,29 +1998,6 @@
         </div>
     </main>
 
-    <!-- Modal pour ajouter un nouveau chantier -->
-    <div id="addChantierModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">🏗️ Ajouter un nouveau chantier</h2>
-                <button class="modal-close" onclick="hideAddChantierModal()">&times;</button>
-            </div>
-            <form class="modal-form" onsubmit="addNewChantier(event)">
-                <div class="form-group">
-                    <label class="form-label" for="chantierName">Nom du chantier :</label>
-                    <input type="text" id="chantierName" class="form-input" placeholder="Ex: NOUVEAU CHANTIER MARSEILLE" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="chantierDescription">Description (optionnelle) :</label>
-                    <input type="text" id="chantierDescription" class="form-input" placeholder="Description du chantier...">
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="hideAddChantierModal()">Annuler</button>
-                    <button type="submit" class="btn-primary">Ajouter le chantier</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <script src="data_sync.js"></script>
     <script>
@@ -2773,68 +2612,6 @@
             // Sélectionner le chantier cliqué
             document.querySelector(`[data-chantier="${chantier}"]`).classList.add('selected');
             selectedChantier = chantier;
-        }
-
-        // Fonction pour afficher le modal d'ajout de chantier
-        function showAddChantierModal() {
-            const modal = document.getElementById('addChantierModal');
-            if (modal) {
-                modal.style.display = 'block';
-                // Réinitialiser le formulaire
-                document.getElementById('chantierName').value = '';
-                document.getElementById('chantierDescription').value = '';
-            } else {
-                console.error('Modal addChantierModal non trouvé');
-            }
-        }
-
-        // Fonction pour fermer le modal d'ajout de chantier
-        function closeAddChantierModal() {
-            const modal = document.getElementById('addChantierModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-
-        // Fonction pour cacher le modal d'ajout de chantier (alias)
-        function hideAddChantierModal() {
-            closeAddChantierModal();
-        }
-
-        // Fonction pour ajouter un nouveau chantier
-        function addNewChantier(event) {
-            event.preventDefault();
-            
-            const chantierName = document.getElementById('chantierName').value.trim();
-            const chantierDescription = document.getElementById('chantierDescription').value.trim();
-            
-            if (!chantierName) {
-                alert('Le nom du chantier est obligatoire');
-                return;
-            }
-            
-            // Vérifier si le chantier existe déjà
-            const existingChantiers = JSON.parse(localStorage.getItem('chantiersList') || '[]');
-            if (existingChantiers.includes(chantierName)) {
-                alert('Ce chantier existe déjà');
-                return;
-            }
-            
-            // Ajouter le nouveau chantier à la liste
-            existingChantiers.push(chantierName);
-            localStorage.setItem('chantiersList', JSON.stringify(existingChantiers));
-            
-            // Fermer le modal
-            closeAddChantierModal();
-            
-            // Recharger la grille des chantiers
-            loadChantiersList();
-            generateChantierGrid();
-            
-            // Notification
-            showNotification(`Chantier "${chantierName}" ajouté avec succès`, 'success');
-            
-            console.log(`Nouveau chantier ajouté: ${chantierName}`);
         }
 
         // Fonction pour modifier un chantier
@@ -3559,28 +3336,39 @@
         // Fonction pour charger la liste des chantiers
         function loadChantiersList() {
             try {
+                // Toujours utiliser la nouvelle liste de chantiers
+                localStorage.removeItem('chantiersList'); // Forcer la mise à jour
                 const saved = localStorage.getItem('chantiersList');
                 if (saved) {
                     const allChantiers = JSON.parse(saved);
                     // Mettre à jour la variable globale chantiers
                     chantiers.length = 0;
                     chantiers.push(...allChantiers);
-                    console.log('📖 Liste des chantiers chargée:', chantiers.length, 'chantiers');
                 } else {
-                    console.log('📖 Aucune liste de chantiers sauvegardée');
                     // Initialiser avec des chantiers par défaut si aucun n'existe
                     const defaultChantiers = [
-                        'Grand Lyon – Pont de Chasse',
+                        'HALLE 9',
+                        'PONT DE CHASSE',
                         'VICHY',
                         'CAMPENON BERNARD',
-                        'EFFIA PARKING BARET',
-                        'FRAMATOME',
-                        'Halle 9'
+                        'PARKING BARET MARSEILLE',
+                        'PARKING CANNES',
+                        'QPARK FAVENTINE VALENCE',
+                        'STADE VELODROME MARSEILLE',
+                        'FRAMATOME CHALONS',
+                        'SAINT GOBAIN - Atelier',
+                        'PARKING MONTPELLIER',
+                        'PARKING COUR JULIEN MARSEILLE',
+                        'CNR VAUGRIS',
+                        'QPARK HDV MARSEILLE',
+                        'PARKING BEZIERS',
+                        'PARKING CHATEAUCREUX ST ETIENNE',
+                        'ADISEO PONTICELLI ROUSSILLON',
+                        'ATELIER ST MAURICE'
                     ];
                     chantiers.length = 0;
                     chantiers.push(...defaultChantiers);
                     localStorage.setItem('chantiersList', JSON.stringify(defaultChantiers));
-                    console.log('📖 Chantiers par défaut initialisés');
                 }
             } catch (error) {
                 console.error('❌ Erreur lors du chargement des chantiers:', error);
@@ -3797,10 +3585,6 @@
 
         // Rendre les fonctions accessibles globalement
         window.removeAffectation = removeAffectation;
-        window.showAddChantierModal = showAddChantierModal;
-        window.closeAddChantierModal = closeAddChantierModal;
-        window.hideAddChantierModal = hideAddChantierModal;
-        window.addNewChantier = addNewChantier;
         window.editChantier = editChantier;
         window.deleteChantier = deleteChantier;
         window.generateChantierGrid = generateChantierGrid;
